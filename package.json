@@ -1,0 +1,63 @@
+{
+  "name": "select-by",
+  "displayName": "Select By",
+  "description": "Select text range based on certain criteria (regex,...)",
+  "publisher": "rioj7",
+  "license": "MIT",
+  "version": "0.1.0",
+  "engines": {"vscode": "^1.37.0"},
+  "categories": ["Other"],
+  "keywords": ["select","text","range"],
+  "icon": "images/icon.png",
+  "galleryBanner": {"color": "#000080", "theme": "dark"},
+  "activationEvents": [
+    "onCommand:selectby.regex1",
+    "onCommand:selectby.regex2",
+    "onCommand:selectby.regex3",
+    "onCommand:selectby.regex4",
+    "onCommand:selectby.regex5"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "selectby.regex1",
+        "title": "Select text range based on regex 1"
+      },
+      {
+        "command": "selectby.regex2",
+        "title": "Select text range based on regex 2"
+      },
+      {
+        "command": "selectby.regex3",
+        "title": "Select text range based on regex 3"
+      },
+      {
+        "command": "selectby.regex4",
+        "title": "Select text range based on regex 4"
+      },
+      {
+        "command": "selectby.regex5",
+        "title": "Select text range based on regex 5"
+      }
+    ],
+    "configuration": {
+      "title": "Select By",
+      "properties": {
+        "selectby.regexes": {
+          "type": "object",
+          "description": "Object with parameters for the different regexes",
+          "default": {}
+        }
+      }
+    }
+  },
+  "main": "./extension.js",
+  "homepage": "https://github.com/rioj7/select-by",
+  "bugs": {
+    "url": "https://github.com/rioj7/select-by/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rioj7/select-by.git"
+  }
+}
