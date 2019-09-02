@@ -4,7 +4,7 @@
   "description": "Select text range based on certain criteria (regex,...)",
   "publisher": "rioj7",
   "license": "MIT",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "engines": {"vscode": "^1.37.0"},
   "categories": ["Other"],
   "keywords": ["select","text","range"],

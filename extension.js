@@ -1,8 +1,6 @@
 const vscode = require('vscode');
-// const path = require('path');
 
 function activate(context) {
-  // const nonPosixPathRexEx = new RegExp('^/([a-zA-Z]):/');
 
   var processRegEx = (nr, editor) => {
     let regexes = vscode.workspace.getConfiguration('selectby').get('regexes');
@@ -28,12 +26,12 @@ function activate(context) {
         selectStart = incMatch ? result.index : regex.lastIndex;
       }
     }
-    var selectEnd = offsetCursor;
+    var selectEnd = editor.document.offsetAt(editor.selection.end);
     if (search.hasOwnProperty("forward")) {
       var incMatch = search.hasOwnProperty("forwardInclude") ? search["forwardInclude"] : true;
       var regex = new RegExp(search["forward"], flags);
+      regex.lastIndex = selectEnd;
       selectEnd = docText.length;
-      regex.lastIndex = offsetCursor;
       var result;
       while ((result=regex.exec(docText)) != null) {
         selectEnd = incMatch ? regex.lastIndex : result.index;
@@ -42,7 +40,6 @@ function activate(context) {
     }
     editor.selection = new vscode.Selection(editor.document.positionAt(selectStart), editor.document.positionAt(selectEnd));
   };
-  // let disposable = vscode.commands.registerTextEditorCommand('extension.htmlescape', function (editor, edit, args) {
 
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.regex1', (editor, edit, args) => { processRegEx(1, editor);}) );
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.regex2', (editor, edit, args) => { processRegEx(2, editor);}) );
@@ -57,9 +54,3 @@ module.exports = {
     activate,
     deactivate
 }
-
-// "flags": "i",
-// "backward": "%% section",
-// "forward": "%% section",
-// "forwardInclude": true,
-// "backwardInclude": true
