@@ -2,8 +2,9 @@ const vscode = require('vscode');
 
 function activate(context) {
 
+  var getProperty = (obj, prop, deflt) => { return obj.hasOwnProperty(prop) ? obj[prop] : deflt; };
   var processRegEx = (nr, editor) => {
-    let regexes = vscode.workspace.getConfiguration('selectby').get('regexes');
+    let regexes = vscode.workspace.getConfiguration('selectby', null).get('regexes');
     let key = 'regex' + nr.toString(10);
     if (!regexes.hasOwnProperty(key)) {
       vscode.window.showErrorMessage('Regex '+nr.toString(10)+" not found.");
@@ -14,10 +15,12 @@ function activate(context) {
     // position of cursor is "start" of selection
     var offsetCursor = editor.document.offsetAt(editor.selection.start);
     var selectStart = offsetCursor;
-    var flags = (search.hasOwnProperty("flags") ? search["flags"] : "") + "g";
-    if (search.hasOwnProperty("backward")) {
-      var incMatch = search.hasOwnProperty("backwardInclude") ? search["backwardInclude"] : true;
-      var regex = new RegExp(search["backward"], flags);
+    var flags = getProperty(search, "flags", "") + "g";
+    var regex;
+    regex = getProperty(search, "backward");
+    if (regex) {
+      var incMatch = getProperty(search, "backwardInclude", true);
+      regex = new RegExp(regex, flags);
       selectStart = 0;
       regex.lastIndex = 0;
       var result;
@@ -27,9 +30,10 @@ function activate(context) {
       }
     }
     var selectEnd = editor.document.offsetAt(editor.selection.end);
-    if (search.hasOwnProperty("forward")) {
-      var incMatch = search.hasOwnProperty("forwardInclude") ? search["forwardInclude"] : true;
-      var regex = new RegExp(search["forward"], flags);
+    regex = getProperty(search, "forward")
+    if (regex) {
+      var incMatch = getProperty(search, "forwardInclude", true);
+      regex = new RegExp(regex, flags);
       regex.lastIndex = selectEnd;
       selectEnd = docText.length;
       var result;
@@ -37,6 +41,9 @@ function activate(context) {
         selectEnd = incMatch ? regex.lastIndex : result.index;
         break;
       }
+    }
+    if (getProperty(search, "copyToClipboard", false)) {
+      vscode.env.clipboard.writeText(docText.substring(selectStart, selectEnd)).then((v)=>v, (v)=>null);
     }
     editor.selection = new vscode.Selection(editor.document.positionAt(selectStart), editor.document.positionAt(selectEnd));
   };

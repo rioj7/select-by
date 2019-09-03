@@ -20,6 +20,7 @@ The ranges are specified in the `settings.json` file for entry `selectby.regexes
     * `forward`:  the regular expression to search for from the selection end (or cursor) to the end of the file. If you want to select to the file end, construct a regex that will never be found. If this parameter is not present the selection end is not modified or ends at the cursor position.
     * `backwardInclude`: should the matched **backward** search text be part of the selection (default: true)
     * `forwardInclude`: should the matched **forward** search text be part of the selection (default: true)
+    * `copyToClipboard`: copy the selection to the clipboard (default: false)
 
 If newline characters are part of the regular expression you can determine if it is part of the selection (see example `regex2`).
 
@@ -38,10 +39,14 @@ If newline characters are part of the regular expression you can determine if it
         "backward": "%% section(\\r?\\n)?",
         "forward": "%% section",
         "forwardInclude": false,
-        "backwardInclude": false
+        "backwardInclude": false,
+        "copyToClipboard": true
       }
     }
 ```
 
 ## TODO
 Support for Multi Cursors
+
+## Known Issues
+The workspace/folder setting does not always override the global user setting
