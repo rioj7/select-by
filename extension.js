@@ -42,10 +42,17 @@ function activate(context) {
         break;
       }
     }
-    if (getProperty(search, "copyToClipboard", false)) {
+    var copyToClipboard = getProperty(search, "copyToClipboard", false);
+    var hideSelectionAfterCopy = getProperty(search, "hideSelectionAfterCopy", false);
+
+    if (copyToClipboard) {
       vscode.env.clipboard.writeText(docText.substring(selectStart, selectEnd)).then((v)=>v, (v)=>null);
     }
-    editor.selection = new vscode.Selection(editor.document.positionAt(selectStart), editor.document.positionAt(selectEnd));
+    if (hideSelectionAfterCopy && copyToClipboard) {
+      editor.selection = new vscode.Selection(editor.document.positionAt(offsetCursor), editor.document.positionAt(offsetCursor));
+    } else {
+      editor.selection = new vscode.Selection(editor.document.positionAt(selectStart), editor.document.positionAt(selectEnd));
+    }
   };
 
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.regex1', (editor, edit, args) => { processRegEx(1, editor);}) );

@@ -21,6 +21,7 @@ The ranges are specified in the `settings.json` file for entry `selectby.regexes
     * `backwardInclude`: should the matched **backward** search text be part of the selection (default: true)
     * `forwardInclude`: should the matched **forward** search text be part of the selection (default: true)
     * `copyToClipboard`: copy the selection to the clipboard (default: false)
+    * `hideSelectionAfterCopy`: hides the copied selection in the editor, and keeps the cursor at its current location. Only works if `copyToClipboard` is true. (default: false)
 
 If newline characters are part of the regular expression you can determine if it is part of the selection (see example `regex2`).
 
