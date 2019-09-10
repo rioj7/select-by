@@ -3,6 +3,7 @@ const vscode = require('vscode');
 function activate(context) {
 
   var getProperty = (obj, prop, deflt) => { return obj.hasOwnProperty(prop) ? obj[prop] : deflt; };
+  var isString = obj => typeof obj === 'string';
   var processRegEx = (nr, editor) => {
     let regexes = vscode.workspace.getConfiguration('selectby', null).get('regexes');
     let key = 'regex' + nr.toString(10);
@@ -11,6 +12,9 @@ function activate(context) {
       return;
     }
     let search = regexes[key];
+    if (getProperty(search, "debugNotify", false)) {
+      vscode.window.showInformationMessage(JSON.stringify(search));
+    }
     var docText = editor.document.getText();
     // position of cursor is "start" of selection
     var offsetCursor = editor.document.offsetAt(editor.selection.start);
@@ -18,7 +22,7 @@ function activate(context) {
     var flags = getProperty(search, "flags", "") + "g";
     var regex;
     regex = getProperty(search, "backward");
-    if (regex) {
+    if (regex && isString(regex)) {
       var incMatch = getProperty(search, "backwardInclude", true);
       regex = new RegExp(regex, flags);
       selectStart = 0;
@@ -31,7 +35,7 @@ function activate(context) {
     }
     var selectEnd = editor.document.offsetAt(editor.selection.end);
     regex = getProperty(search, "forward")
-    if (regex) {
+    if (regex && isString(regex)) {
       var incMatch = getProperty(search, "forwardInclude", true);
       regex = new RegExp(regex, flags);
       regex.lastIndex = selectEnd;

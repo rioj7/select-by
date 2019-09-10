@@ -4,7 +4,7 @@
   "description": "Select text range based on certain criteria (regex,...)",
   "publisher": "rioj7",
   "license": "MIT",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "engines": {"vscode": "^1.37.0"},
   "categories": ["Other"],
   "keywords": ["select","text","range"],
@@ -47,7 +47,51 @@
           "type": "object",
           "scope": "resource",
           "description": "Object with parameters for the different regexes",
-          "default": {}
+          "default": {},
+          "patternProperties": {
+            "^regex[1-5]$": {
+              "type": "object",
+              "properties": {
+                "flags": {
+                  "type": "string",
+                  "description": "string with the regex flags \"i\" and/or \"m\" (default: \"\")"
+                },
+                "backward": {
+                  "type": ["string", "boolean"],
+                  "description": "(Optional) regular expression to search from the selection start (or cursor) to the start of the file, or false (to override User setting)"
+                },
+                "forward": {
+                  "type": ["string", "boolean"],
+                  "description": "(Optional) regular expression to search for from the selection end (or cursor) to the end of the file, or false (to override User setting)"
+                },
+                "backwardInclude": {
+                  "type": "boolean",
+                  "description": "(Optional) should the matched backward search text be part of the selection (default: true)"
+                },
+                "forwardInclude": {
+                  "type": "boolean",
+                  "description": "(Optional) should the matched **forward** search text be part of the selection (default: true)"
+                },
+                "copyToClipboard": {
+                  "type": "boolean",
+                  "description": "(Optional) copy the selection to the clipboard (default: false)"
+                },
+                "showSelection": {
+                  "type": "boolean",
+                  "description": "(Optional) modify the selection to include the new searched positions. Useful if `copyToClipboard` is true. (default: true)"
+                },
+                "debugNotify": {
+                  "type": "boolean",
+                  "description": "(Optional) show a notify message of the used search properties (User and Workspace properties are merged) (default: false)"
+                }
+              },
+              "dependencies": {
+                "backwardInclude": ["backward"],
+                "forwardInclude": ["forward"]
+              }
+            }
+          },
+          "additionalProperties": false
         }
       }
     }
