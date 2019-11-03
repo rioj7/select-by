@@ -1,13 +1,13 @@
 {
   "name": "select-by",
   "displayName": "Select By",
-  "description": "Select text range based on certain criteria (regex,...)",
+  "description": "Select text range based on certain criteria (regex,...) and move cursor by regex",
   "publisher": "rioj7",
   "license": "MIT",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "engines": {"vscode": "^1.37.0"},
   "categories": ["Other"],
-  "keywords": ["select","text","range"],
+  "keywords": ["select","text","range", "move", "cursor"],
   "icon": "images/icon.png",
   "galleryBanner": {"color": "#000080", "theme": "dark"},
   "activationEvents": [
@@ -15,7 +15,8 @@
     "onCommand:selectby.regex2",
     "onCommand:selectby.regex3",
     "onCommand:selectby.regex4",
-    "onCommand:selectby.regex5"
+    "onCommand:selectby.regex5",
+    "onCommand:moveby.regex"
   ],
   "contributes": {
     "commands": [
@@ -38,6 +39,10 @@
       {
         "command": "selectby.regex5",
         "title": "Select text range based on regex 5"
+      },
+      {
+        "command": "moveby.regex",
+        "title": "Move cursor based on regex by keybinding"
       }
     ],
     "configuration": {
@@ -49,7 +54,7 @@
           "description": "Object with parameters for the different regexes",
           "default": {},
           "patternProperties": {
-            "^regex[1-5]$": {
+            "^regex([1-5]|[1-9][0-9])$": {
               "type": "object",
               "properties": {
                 "flags": {
@@ -70,7 +75,7 @@
                 },
                 "forwardInclude": {
                   "type": "boolean",
-                  "description": "(Optional) should the matched **forward** search text be part of the selection (default: true)"
+                  "description": "(Optional) should the matched forward search text be part of the selection (default: true)"
                 },
                 "copyToClipboard": {
                   "type": "boolean",
@@ -83,6 +88,10 @@
                 "debugNotify": {
                   "type": "boolean",
                   "description": "(Optional) show a notify message of the used search properties (User and Workspace properties are merged) (default: false)"
+                },
+                "moveby": {
+                  "type": "string",
+                  "description": "(Optional) regular expression to search for, Used only by moveby.regex"
                 }
               },
               "dependencies": {
