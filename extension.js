@@ -98,6 +98,8 @@ function activate(context) {
     if (location === undefined) return;
     location = editor.document.positionAt(location);
     editor.selection = new vscode.Selection(location, location);
+    var rng = new vscode.Range(location, location);
+    editor.revealRange(rng, vscode.TextEditorRevealType[vscode.workspace.getConfiguration('moveby', null).get('revealType')]);
   };
 
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.regex1', (editor, edit, args) => { processRegEx(1, editor);}) );
