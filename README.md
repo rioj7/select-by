@@ -14,11 +14,13 @@ So you can extend the selection
 * from the selection start (or cursor) search back for a Regular Expression or start of the file
 * or combine both searches
 
-You can specify up to 5 ranges specified by Regular Expressions that can be linked to keyboard shortcuts.
+You can specify any number of ranges specified by Regular Expressions that can be linked to keyboard shortcuts. A range can have any name.
+
+The extension exports 5 commands that use a fixed name: `selectby.regex1` to `selectby.regex5` use the respective range names: `regex1`, `regex2`, `regex3`, `regex4`, `regex5`.
 
 The ranges are specified in the `settings.json` file for entry `selectby.regexes`.
 
-* the 5 ranges have the keys: `regex1`, `regex2`, `regex3`, `regex4`, `regex5`
+* the key for the range can have any name
 * the parameters for each range are
     * `flags`: a string with the regex flags "i" and/or "m" (default: "")
     * `backward`: the regular expression to search from the selection start (or cursor) to the start of the file. If you want to select to the file start, construct a regex that will never be found. If this parameter is not present the selection start is not modified or starts at the cursor position. Or `false` if you want to override User setting.
@@ -30,7 +32,7 @@ The ranges are specified in the `settings.json` file for entry `selectby.regexes
     * `debugNotify`: show a notify message of the used search properties (User and Workspace properties are merged) (default: false)
     * `moveby`: the regular expression to search for. Used only by Move By
 
-If newline characters are part of the regular expression you can determine if it is part of the selection (see example `regex2`).
+If newline characters are part of the regular expression you can determine if it is part of the selection (see example `SectionContent`).
 
 ## An example
 
@@ -43,7 +45,7 @@ If newline characters are part of the regular expression you can determine if it
         "backwardInclude": true,
         "forwardInclude": false
       },
-      "regex2": {
+      "SectionContent": {
         "backward": "%% section(\\r?\\n)?",
         "forward": "%% section",
         "forwardInclude": false,
@@ -52,6 +54,22 @@ If newline characters are part of the regular expression you can determine if it
       }
     }
 ```
+
+## Select By with keybindings
+
+The command `selectby.regex` uses arguments to determine the regex range to use. You specify the arguments in a keybinding. At the moment only one argument is used, the name of the range.
+
+You need to create 1 or more [key bindings in `keybindings.json`](https://code.visualstudio.com/docs/getstarted/keybindings).
+
+```json
+  {
+    "key": "ctrl+shift+alt+f9",
+    "when": "editorTextFocus",
+    "command": "selectby.regex",
+    "args": ["SectionContent"]
+  }
+```
+
 ## User and Workspace settings
 The Workspace/folder setting does override the global User setting. The settings are deep-merged.
 
@@ -135,3 +153,4 @@ An example key binding:
 
 * Support for Multi Cursors
 * Move By called from Command Palette, Enter/Select options and remember RegExes for this section of VSC
+* Select By called from Command Palette, use QuickPick to choose a defined range.

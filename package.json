@@ -4,7 +4,7 @@
   "description": "Select text range based on certain criteria (regex,...) and move cursor by regex",
   "publisher": "rioj7",
   "license": "MIT",
-  "version": "0.5.1",
+  "version": "0.6",
   "engines": {"vscode": "^1.37.0"},
   "categories": ["Other"],
   "keywords": ["select","text","range", "move", "cursor"],
@@ -16,6 +16,7 @@
     "onCommand:selectby.regex3",
     "onCommand:selectby.regex4",
     "onCommand:selectby.regex5",
+    "onCommand:selectby.regex",
     "onCommand:moveby.regex"
   ],
   "contributes": {
@@ -41,6 +42,10 @@
         "title": "Select text range based on regex 5"
       },
       {
+        "command": "selectby.regex",
+        "title": "Select text range based on regex"
+      },
+      {
         "command": "moveby.regex",
         "title": "Move cursor based on regex by keybinding"
       }
@@ -54,12 +59,12 @@
           "description": "Object with parameters for the different regexes",
           "default": {},
           "patternProperties": {
-            "^regex([1-5]|[1-9][0-9])$": {
+            "^.+$": {
               "type": "object",
               "properties": {
                 "flags": {
                   "type": "string",
-                  "description": "string with the regex flags \"i\" and/or \"m\" (default: \"\")"
+                  "description": "(Optional) string with the regex flags \"i\" and/or \"m\" (default: \"\")"
                 },
                 "backward": {
                   "type": ["string", "boolean"],

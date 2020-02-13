@@ -4,17 +4,22 @@ function activate(context) {
 
   var getProperty = (obj, prop, deflt) => { return obj.hasOwnProperty(prop) ? obj[prop] : deflt; };
   var isString = obj => typeof obj === 'string';
-  var processRegEx = (nr, editor) => {
+  var getConfigRegEx = regexKey => {
     let regexes = vscode.workspace.getConfiguration('selectby', null).get('regexes');
-    let key = 'regex' + nr.toString(10);
-    if (!regexes.hasOwnProperty(key)) {
-      vscode.window.showErrorMessage('Regex '+nr.toString(10)+" not found.");
-      return;
+    if (!regexes.hasOwnProperty(regexKey)) {
+      vscode.window.showErrorMessage(regexKey+" not found.");
+      return undefined;
     }
-    let search = regexes[key];
+    let search = regexes[regexKey];
     if (getProperty(search, "debugNotify", false)) {
       vscode.window.showInformationMessage(JSON.stringify(search));
     }
+    return search;
+  };
+  var processRegEx = (regexKey, editor) => {
+    if (!isString(regexKey)) { regexKey = 'regex' + regexKey.toString(10); }
+    let search = getConfigRegEx(regexKey);
+    if (search === undefined) { return; }
     var docText = editor.document.getText();
     // position of cursor is "start" of selection
     var offsetCursor = editor.document.offsetAt(editor.selection.start);
@@ -54,16 +59,18 @@ function activate(context) {
     }
   };
 
+  var selectbyRegEx = (editor, args) => {
+    if (args === undefined) {
+      vscode.window.showInformationMessage("Need keybinding with \"args\" property");
+      return; // TODO use QuickSelect to get regexKey
+    }
+    processRegEx(args[0], editor);
+  };
+
   var findRegexLocation = (editor, regexKey, regexFBM, nextPrev, startEnd) => {
-    let regexes = vscode.workspace.getConfiguration('selectby', null).get('regexes');
-    if (!regexes.hasOwnProperty(regexKey)) {
-      vscode.window.showErrorMessage(regexKey+" not found.");
-      return undefined;
-    }
-    let search = regexes[regexKey];
-    if (getProperty(search, "debugNotify", false)) {
-      vscode.window.showInformationMessage(JSON.stringify(search));
-    }
+    let search = getConfigRegEx(regexKey);
+    if (search === undefined) { return undefined; }
+
     var docText = editor.document.getText();
 
     var findPrev = (nextPrev === "prev");
@@ -107,6 +114,7 @@ function activate(context) {
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.regex3', (editor, edit, args) => { processRegEx(3, editor);}) );
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.regex4', (editor, edit, args) => { processRegEx(4, editor);}) );
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.regex5', (editor, edit, args) => { processRegEx(5, editor);}) );
+  context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.regex', (editor, edit, args) => { selectbyRegEx(editor, args);}) );
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('moveby.regex', (editor, edit, args) => { movebyRegEx(editor, args);}) );
 };
 
