@@ -39,11 +39,36 @@ function activate(context) {
       }
     }
     var selectEnd = editor.document.offsetAt(editor.selection.end);
-    regex = getProperty(search, "forward")
+    regex = getProperty(search, "forward");
+    var regexForwardNext = getProperty(search, "forwardNext");
+    var startForwardNext = selectEnd;
+    var forwardResult = [];
     if (regex && isString(regex)) {
       var incMatch = getProperty(search, "forwardInclude", true);
+      if (regexForwardNext && isString(regexForwardNext)) { // we have to flip the incMatch
+        incMatch = !incMatch;
+      }
       regex = new RegExp(regex, flags);
       regex.lastIndex = selectEnd;
+      selectEnd = docText.length;
+      var result;
+      while ((result=regex.exec(docText)) != null) {
+        selectEnd = incMatch ? regex.lastIndex : result.index;
+        startForwardNext = regex.lastIndex;
+        forwardResult = result.slice();
+        break;
+      }
+    }
+    if (regexForwardNext && isString(regexForwardNext)) {
+      selectStart = selectEnd;
+      var incMatch = getProperty(search, "forwardNextInclude", true);
+      regexForwardNext = regexForwardNext.replace(/{{(\d+)}}/g, (match, p1) => {
+        let groupNr = parseInt(p1, 10);
+        if (groupNr >= forwardResult.length) { return ""; }
+        return forwardResult[groupNr];
+      });
+      regex = new RegExp(regexForwardNext, flags);
+      regex.lastIndex = startForwardNext;
       selectEnd = docText.length;
       var result;
       while ((result=regex.exec(docText)) != null) {

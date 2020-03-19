@@ -4,15 +4,17 @@ The extension has commands for 2 things:
 * Move By: move the cursor based on Regular Expressions
 
 # Select By
-Select part of the file content surrounding the selection based on Regular Expressions. The current selection is extended by searching forward and or backward. If there is no current selection the cursor position is used.
+Select part of the file content surrounding the selection based on Regular Expressions. The current selection is extended by searching forward and or backward or forward twice. If there is no current selection the cursor position is used.
 
-You can specify a "Search Back" expression and a "Search Forward" expression. If they are not specified that search direction is not performed.
+You can specify a "Search Back" expression, a "Search Forward" expression and  a "Search Forward Next" expression. If they are not specified that search direction is not performed.
 
 So you can extend the selection
 
-* from the selection end (or cursor) to the next occurrence of a Regular Expression or end of the file
-* from the selection start (or cursor) search back for a Regular Expression or start of the file
-* or combine both searches
+* Forward: from the selection end (or cursor) to the next occurrence of a Regular Expression or end of the file
+* Backward: from the selection start (or cursor) search back for a Regular Expression or start of the file
+* ForwardNext: from the end of the Forward search, search for a different Regular Expression in the Forward direction. You can reuse captured groups from the forward Regular Expression.
+* or combine Forward and Backward
+* or combine Forward and ForwardNext
 
 You can specify any number of ranges specified by Regular Expressions that can be linked to keyboard shortcuts. A range can have any name.
 
@@ -25,8 +27,10 @@ The ranges are specified in the `settings.json` file for entry `selectby.regexes
     * `flags`: a string with the regex flags "i" and/or "m" (default: "")
     * `backward`: the regular expression to search from the selection start (or cursor) to the start of the file. If you want to select to the file start, construct a regex that will never be found. If this parameter is not present the selection start is not modified or starts at the cursor position. Or `false` if you want to override User setting.
     * `forward`: the regular expression to search for from the selection end (or cursor) to the end of the file. If you want to select to the file end, construct a regex that will never be found. If this parameter is not present the selection end is not modified or ends at the cursor position. Or `false` if you want to override User setting.
+    * `forwardNext`: the regular expression to search for starting at the end of the **forward** search to the end of the file. Or false (to override User setting). See explanation.
     * `backwardInclude`: should the matched **backward** search text be part of the selection (default: true)
     * `forwardInclude`: should the matched **forward** search text be part of the selection (default: true)
+    * `forwardNextInclude`: should the matched **forwardNext** search text be part of the selection (default: true)
     * `copyToClipboard`: copy the selection to the clipboard (default: false)
     * `showSelection`: modify the selection to include the new searched positions. Useful if `copyToClipboard` is true. (default: true)
     * `debugNotify`: show a notify message of the used search properties (User and Workspace properties are merged) (default: false)
@@ -67,6 +71,41 @@ You need to create 1 or more [key bindings in `keybindings.json`](https://code.v
     "when": "editorTextFocus",
     "command": "selectby.regex",
     "args": ["SectionContent"]
+  }
+```
+
+## Select By with ForwardNext
+
+By using the **forward** and **forwardNext** Regular Expressions you can modify the selection from the current selection end, or cursor position, by searching first for the **forward** Regular Expression and from that location search again for a Regular Expression to determine the end of the new selection.
+
+It does not make sense to specify the **backward** Regular Expression. It has no effect on the result.
+
+It is possible in the **forwardNext** Regular Expression to use captured groups `()` from the **forward** Regular Expression. It uses a special syntax to fill in the captured groups. Use `{{n}}` to use captured group `n` from the **forward** Regular Expression. To use captured group 1 you use `{{1}}`.
+
+### An example: Select the next string content
+
+In python you can specify 4 types of string literals.
+
+Put this in your `settings.json` file:
+
+```json
+    "selectby.regexes": {
+      "stringContent": {
+        "forward": "('''|\"\"\"|'|\")",
+        "forwardNext": "{{1}}",
+        "forwardInclude": false,
+        "forwardNextInclude": false
+      }
+    }
+```
+Define a keybinding:
+
+```json
+  {
+    "key": "ctrl+shift+alt+f10",
+    "when": "editorTextFocus",
+    "command": "selectby.regex",
+    "args": ["stringContent"]
   }
 ```
 

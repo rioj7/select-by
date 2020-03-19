@@ -4,7 +4,7 @@
   "description": "Select text range based on certain criteria (regex,...) and move cursor by regex",
   "publisher": "rioj7",
   "license": "MIT",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "engines": {"vscode": "^1.37.0"},
   "categories": ["Other"],
   "keywords": ["select","text","range", "move", "cursor"],
@@ -74,6 +74,10 @@
                   "type": ["string", "boolean"],
                   "description": "(Optional) regular expression to search for from the selection end (or cursor) to the end of the file, or false (to override User setting)"
                 },
+                "forwardNext": {
+                  "type": ["string", "boolean"],
+                  "description": "(Optional) regular expression to search for starting at the end of the forward search to the end of the file, or false (to override User setting)"
+                },
                 "backwardInclude": {
                   "type": "boolean",
                   "description": "(Optional) should the matched backward search text be part of the selection (default: true)"
@@ -81,6 +85,10 @@
                 "forwardInclude": {
                   "type": "boolean",
                   "description": "(Optional) should the matched forward search text be part of the selection (default: true)"
+                },
+                "forwardNextInclude": {
+                  "type": "boolean",
+                  "description": "(Optional) should the matched forwardNext search text be part of the selection (default: true)"
                 },
                 "copyToClipboard": {
                   "type": "boolean",
