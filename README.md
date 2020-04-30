@@ -164,7 +164,7 @@ To use Move By you need to create 1 or more [key bindings in `keybindings.json`]
 If called from the Command Palette nothing happens.
 
 The details of the search are specified in the `"args"` property of the key binding. It is an array of 4 strings. You must specify all 4, there are no default values:
-* index 0: the regex you want to use as defined in the settings option `selectby.regexes`. You can use `"regex1"` to `"regex99"`
+* index 0: the regex you want to use as defined in the settings option `selectby.regexes`.
 * index 1: `"forward"` | `"backward"` | `"moveby"` - which regex string should be used
 * index 2: `"prev"` | `"next"` - search direction - do you want to search for the **previous** or **next** occurrence of the Regular Expression
 * index 3: `"start"` | `"end"` - should the cursor move to the **start** or the **end** of the found Regular Expression
@@ -184,7 +184,7 @@ An example key binding:
     "key": "ctrl+shift+alt+s",
     "when": "editorTextFocus",
     "command": "moveby.regex",
-    "args": ["regex3", "forward", "prev", "start"]
+    "args": ["SectionContent", "forward", "prev", "start"]
   }
 ```
 
