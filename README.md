@@ -188,6 +188,35 @@ An example key binding:
   }
 ```
 
+## Move to previous and next empty line
+
+Created by [Arturo Dent](https://github.com/rioj7/select-by/issues/7) and it needed a small code change to work because the regex matches an empty string.
+
+Add the following to `selectby.regexes`
+
+```json
+    "goToEmptyLine": {
+      "flags": "m",
+      "moveby": "^$",
+    }
+```
+
+Define 2 key bindings (you can change the assigned keys)
+```json
+  {
+    "key": "ctrl+shift+f7",
+    "when": "editorTextFocus",
+    "command": "moveby.regex",
+    "args": ["goToEmptyLine", "moveby", "prev", "start"]
+  },
+  {
+    "key": "ctrl+shift+f8",
+    "when": "editorTextFocus",
+    "command": "moveby.regex",
+    "args": ["goToEmptyLine", "moveby", "next", "start"]
+  }
+```
+
 # TODO
 
 * Support for Multi Cursors

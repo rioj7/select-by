@@ -108,9 +108,14 @@ function activate(context) {
     if (regex && isString(regex)) {
       regex = new RegExp(regex, flags);
       regex.lastIndex = findPrev ? 0 : offsetCursor;
-      var result;
-      while ((result=regex.exec(docText)) != null) {
+      while (true) {
+        let prevLastIndex = regex.lastIndex;
+        let result=regex.exec(docText);
+        if (result === null) break;
         var resultLocation = findStart ? result.index : regex.lastIndex;
+        if (prevLastIndex === regex.lastIndex) { // search for empty line
+          regex.lastIndex = prevLastIndex + 1;
+        }
         if (findPrev) {
           if (resultLocation >= offsetCursor) break;
           location = resultLocation;
