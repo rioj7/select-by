@@ -1,7 +1,7 @@
 The extension has commands for 2 things:
 
-* Select By: modify the selection based on Regular Expressions
-* Move By: move the cursor based on Regular Expressions
+* [Select By](#select-by): modify the selection based on Regular Expressions
+* [Move By](#move-by): move the cursor based on Regular Expressions
 
 # Select By
 Select part of the file content surrounding the selection based on Regular Expressions. The current selection is extended by searching forward and or backward or forward twice. If there is no current selection the cursor position is used.
@@ -60,6 +60,8 @@ If newline characters are part of the regular expression you can determine if it
 ```
 
 ## Select By with keybindings
+
+It could be handy to have a search for a Regular Expression bound to a keyboard shortcut.
 
 The command `selectby.regex` uses arguments to determine the regex range to use. You specify the arguments in a keybinding. At the moment only one argument is used, the name of the range.
 
@@ -153,7 +155,7 @@ There will be still a search done backward for: `%% article`. The extension does
 
 # Move By
 
-It could be handy to have a search for a Regular Expression bound to a keyboard shortcut.
+You can move the cursor based on Regular Expressions.
 
 The exported command is: `moveby.regex`
 
@@ -164,7 +166,7 @@ To use Move By you need to create 1 or more [key bindings in `keybindings.json`]
 If called from the Command Palette nothing happens.
 
 The details of the search are specified in the `"args"` property of the key binding. It is an array of 4 strings. You must specify all 4, there are no default values:
-* index 0: the regex you want to use as defined in the settings option `selectby.regexes`.
+* index 0: the key/name of the range you want to use as defined in the settings option `selectby.regexes`
 * index 1: `"forward"` | `"backward"` | `"moveby"` - which regex string should be used
 * index 2: `"prev"` | `"next"` - search direction - do you want to search for the **previous** or **next** occurrence of the Regular Expression
 * index 3: `"start"` | `"end"` - should the cursor move to the **start** or the **end** of the found Regular Expression
@@ -197,7 +199,7 @@ Add the following to `selectby.regexes`
 ```json
     "goToEmptyLine": {
       "flags": "m",
-      "moveby": "^$",
+      "moveby": "^$"
     }
 ```
 
