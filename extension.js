@@ -92,7 +92,7 @@ function activate(context) {
     processRegEx(args[0], editor);
   };
 
-  var findRegexLocation = (editor, regexKey, regexFBM, nextPrev, startEnd) => {
+  var findRegexLocation = (editor, regexKey, regexFBM, nextPrev, startEnd, wrapCursor) => {
     let search = getConfigRegEx(regexKey);
     if (search === undefined) { return undefined; }
 
@@ -100,6 +100,8 @@ function activate(context) {
 
     var findPrev = (nextPrev === "prev");
     var findStart = (startEnd === "start");
+    wrapCursor = (wrapCursor === "wrap");
+    var wrappedCursor = false;
     var offsetCursor = editor.document.offsetAt(findPrev ? editor.selection.start : editor.selection.end);
     var location = offsetCursor;
     var flags = getProperty(search, "flags", "") + "g";
@@ -111,13 +113,49 @@ function activate(context) {
       while (true) {
         let prevLastIndex = regex.lastIndex;
         let result=regex.exec(docText);
-        if (result === null) break;
+        if (result === null) {
+          if (wrapCursor) {
+            wrapCursor = undefined; // only wrap once
+            if (findPrev) {
+              break; // leave cursor at current location
+            } else {
+              regex.lastIndex = 0;
+              result = regex.exec(docText);
+              if (result == null) { break; } // leave cursor at current location
+              if (result.index == 0) { // found at start of file
+                location = findStart ? result.index : regex.lastIndex;
+                break;
+              }
+              location = 0;
+              offsetCursor = location;
+              regex.lastIndex = location;
+              continue;
+            }
+          }
+          break;
+        }
         var resultLocation = findStart ? result.index : regex.lastIndex;
         if (prevLastIndex === regex.lastIndex) { // search for empty line
           regex.lastIndex = prevLastIndex + 1;
         }
         if (findPrev) {
-          if (resultLocation >= offsetCursor) break;
+          // for the regex in the file: #hit >= 1
+          if (resultLocation >= offsetCursor) {
+            if (offsetCursor === docText.length && wrappedCursor && resultLocation === offsetCursor) {
+              location = offsetCursor; // a hit at the very end of the file
+              break;
+            }
+            if (location !== offsetCursor) { break; } // found one before offsetCursor
+            if (wrapCursor) {
+              wrapCursor = undefined; // only wrap once
+              wrappedCursor = true;
+              offsetCursor = docText.length;
+              location = offsetCursor;
+              regex.lastIndex = 0;
+              continue;
+            }
+            break;
+          }
           location = resultLocation;
         } else { // Next
           if (resultLocation > offsetCursor) {
@@ -131,7 +169,7 @@ function activate(context) {
   };
   var movebyRegEx = (editor, args) => {
     if (args === undefined) return; // TODO use QuickSelect to construct an args array
-    var location = findRegexLocation(editor, args[0], args[1], args[2], args[3]);
+    var location = findRegexLocation(editor, args[0], args[1], args[2], args[3], args[4]);
     if (location === undefined) return;
     location = editor.document.positionAt(location);
     editor.selection = new vscode.Selection(location, location);

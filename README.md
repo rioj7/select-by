@@ -168,8 +168,11 @@ If called from the Command Palette nothing happens.
 The details of the search are specified in the `"args"` property of the key binding. It is an array of 4 strings. You must specify all 4, there are no default values:
 * index 0: the key/name of the range you want to use as defined in the settings option `selectby.regexes`
 * index 1: `"forward"` | `"backward"` | `"moveby"` - which regex string should be used
-* index 2: `"prev"` | `"next"` - search direction - do you want to search for the **previous** or **next** occurrence of the Regular Expression
-* index 3: `"start"` | `"end"` - should the cursor move to the **start** or the **end** of the found Regular Expression
+* index 2: `"prev"` | `"next"` - search direction - do you want to search for the **previous** or **next** occurrence of the Regular Expression (default: `"next"`)
+* index 3: `"start"` | `"end"` - should the cursor move to the **start** or the **end** of the found Regular Expression (default: `"end"`)
+* index 4: `"wrap"` | `"nowrap"` - optional argument: do we wrap to other side of the file and continue search if not found  (default: `"nowrap"`) (proposed by [Arturo Dent](https://github.com/rioj7/select-by/issues/8))
+
+If the last element of the array is a default value you can omit that argument. You can apply this rule multiple times.
 
 To use regular expressions that are not used in selections you can use the `"moveby"` property of the `selectby.regexes` elements or you can duplicate the `"forward"` or `"backward"` field. This property is just added to prevent confusion in the specification of `"args"` (`"forward"` does not mean to search in the forward direction)
 
