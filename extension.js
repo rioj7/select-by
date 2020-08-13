@@ -81,6 +81,7 @@ function activate(context) {
     }
     if (getProperty(search, "showSelection", true)) {
       editor.selection = new vscode.Selection(editor.document.positionAt(selectStart), editor.document.positionAt(selectEnd));
+      editor.revealRange(editor.selection);
     }
   };
 
