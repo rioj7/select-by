@@ -90,6 +90,17 @@
                   "type": "boolean",
                   "description": "(Optional) should the matched forwardNext search text be part of the selection (default: true)"
                 },
+                "forwardNextIncludeExclusivelyWhen": {
+                  "type": [
+                    "string",
+                    "boolean"
+                  ],
+                  "description": "(Optional) should the matched forwardNext search text be the only selection at the given condition: \"always\", \"jumped\" or \"never\" (default: \"never\")"
+                },
+                "forwardNextInsteadExtendsSelectionIfAny": {
+                  "type": "boolean",
+                  "description": "(Optional) should the selection made by a matched forwardNext search text, instead, extends from the selection start when the \"original+backward+forward\" include-range is non-empty. The default behavior is to start a new (jumped) selection from the start of the \"forward\" match (or the end of current-selection if no match). Note that \"forwardNextIncludeExclusivelyWhen\" overrides this behavior (default: false)"
+                },
                 "copyToClipboard": {
                   "type": "boolean",
                   "description": "(Optional) copy the selection to the clipboard (default: false)"
@@ -110,7 +121,9 @@
               "dependencies": {
                 "backwardInclude": ["backward"],
                 "forwardInclude": ["forward"],
-                "forwardNextInclude": ["forwardNext"]
+                "forwardNextInclude": ["forwardNext"],
+                "forwardNextIncludeExclusivelyWhen": ["forwardNext"],
+                "forwardNextInsteadExtendsSelectionIfAny": ["forwardNext"]
               }
             }
           },

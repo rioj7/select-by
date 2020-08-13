@@ -31,6 +31,8 @@ The ranges are specified in the `settings.json` file for entry `selectby.regexes
     * `backwardInclude`: should the matched **backward** search text be part of the selection (default: true)
     * `forwardInclude`: should the matched **forward** search text be part of the selection (default: true)
     * `forwardNextInclude`: should the matched **forwardNext** search text be part of the selection (default: true)
+    * `forwardNextIncludeExclusivelyWhen`: should the matched **forwardNext** search text be the only selection at the given condition: "always", "jumped" or "never" (default: "never")
+    * `forwardNextInsteadExtendsSelectionIfAny`: should the selection made by a matched **forwardNext** search text, instead, extends from the selection start when the **original+backward+forward** include-range is non-empty. The default behavior is to start a new (jumped) selection from the start of the **forward** match (or the end of current-selection if no match). Note that **forwardNextIncludeExclusivelyWhen** overrides this behavior (default: false)
     * `copyToClipboard`: copy the selection to the clipboard (default: false)
     * `showSelection`: modify the selection to include the new searched positions. Useful if `copyToClipboard` is true. (default: true)
     * `debugNotify`: show a notify message of the used search properties (User and Workspace properties are merged) (default: false)

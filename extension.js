@@ -39,29 +39,77 @@ function activate(context) {
       }
     }
     var selectEnd = editor.document.offsetAt(editor.selection.end);
+    var selectNewStartForForwardNext = selectEnd;
     regex = getProperty(search, "forward");
     var regexForwardNext = getProperty(search, "forwardNext");
     var startForwardNext = selectEnd;
     var forwardResult = [];
     if (regex && isString(regex)) {
       var incMatch = getProperty(search, "forwardInclude", true);
-      if (regexForwardNext && isString(regexForwardNext)) { // we have to flip the incMatch
-        incMatch = !incMatch;
-      }
       regex = new RegExp(regex, flags);
       regex.lastIndex = selectEnd;
-      selectEnd = docText.length;
+      selectNewStartForForwardNext = selectEnd = docText.length;
       var result;
       while ((result=regex.exec(docText)) != null) {
         selectEnd = incMatch ? regex.lastIndex : result.index;
+        selectNewStartForForwardNext = incMatch ? result.index : regex.lastIndex; // we have to flip range's meaning from "end" to "start"
         startForwardNext = regex.lastIndex;
         forwardResult = result.slice();
         break;
       }
     }
     if (regexForwardNext && isString(regexForwardNext)) {
-      selectStart = selectEnd;
-      var incMatch = getProperty(search, "forwardNextInclude", true);
+      var incMatch = getProperty(search, 'forwardNextInclude', true);
+      // **NEW** "forwardNextInsteadExtendsSelectionIfAny" boolean option: indicate "forwardNext" pattern should extend selection (instead of starting selection again, i.e. making a jump, from the selectNewStartForForwardNext - the selection end after "forward") if the current modified range (selectStart, selectEnd) is non-empty
+      var insteadExtendsSelectionIfAny = getProperty(search, 'forwardNextInsteadExtendsSelectionIfAny', false);
+      // **NEW** "forwardNextIncludeExclusivelyWhen" string option: when condition holds, the "forwardNext" pattern match itself should be selected exclusively; "jumped" -> condition if the "forwardNext" pattern match is not at the first position (startForwardNext); "always" -> always true; "never" (default) -> never true
+      var includeExclusivelyWhen = incMatch ? getProperty(search, 'forwardNextIncludeExclusivelyWhen', 'never') : 'never';
+      /**
+       * ## Example rule:
+       *
+       * ```
+       * "selectby.regexes": {
+       *   "Select/extend-to next tuple item": {
+       *     "forward": "\\s*",
+       *     "forwardInclude": false,
+       *     "forwardNext": "\\w+\\s?(,\\s*)?",
+       *     "forwardNextInsteadExtendsSelectionIfAny": true,
+       *     "forwardNextIncludeExclusivelyWhen": "jumped"
+       *   }
+       * }
+       * ```
+       *
+       * "Select/extend-to next tuple item" may be used to select single/multiple tuple items for swapping orders, removing or copying.
+       *
+       * ### Run rule result:
+       *
+       * ```
+       * (  v original cursor after "1," )
+       * (1,`' 2, 3)  -->  (1, `2, '3)  -->  (1, `2, 3')  -->  (1, 2, 3)    -->  (1, 2, 3)    -->  (1, 2, 3)    -->  (1, 2, 3)
+       * (4, 5, 6)         (4, 5, 6)         (4, 5, 6)         (`4, '5, 6)       (`4, 5, '6)       (`4, 5, 6')       (4, 5, 6)`'
+       * ```
+       *
+       * Terminology:
+       * * `..' : indicate a selection
+       * * -->  :  show the `..' selection after a "Select/extend-to next tuple item" command
+       *
+       */
+
+      /**
+       * (Additional) Truth table - for the "Select/extend-to next tuple item" rule example:
+       *
+       * forwardInclude   original+backward+forward is empty    forwardNext jumped   extends-sel?   exclusive-sel?   depends on forwardNextInsteadExtendsSelectionIfAny/forwardNextIncludeExclusivelyWhen
+       * n                y                                     y                    n              y                forwardNextIncludeExclusivelyWhen - in (always, jumped) -> yes
+       * n                y                                     n                    n              y (always)       nothing
+       * n                n                                     y                    n              y                both
+       * n                n                                     n                    y              n                both
+       *
+       */
+
+      var hasSelection = selectStart != selectEnd; // whether the current modified range - (selectStart, selectEnd) - is not empty
+      if (!(insteadExtendsSelectionIfAny && hasSelection)) {
+        selectStart = selectNewStartForForwardNext;
+      }
       regexForwardNext = regexForwardNext.replace(/{{(\d+)}}/g, (match, p1) => {
         let groupNr = parseInt(p1, 10);
         if (groupNr >= forwardResult.length) { return ""; }
@@ -74,6 +122,12 @@ function activate(context) {
       while ((result=regex.exec(docText)) != null) {
         selectEnd = incMatch ? regex.lastIndex : result.index;
         break;
+      }
+      var matchStart = result != null ? result.index : docText.length;
+      // allow to select the regex match of forwardNext only, without the gap between last selection end (i.e. between previous selectEnd & this "forwardNext" match's start).
+      var hasJumped = matchStart > startForwardNext; // i.e. if not a direct match anchored at startForwardNext
+      if (includeExclusivelyWhen === 'always' || (includeExclusivelyWhen === 'jumped' && hasJumped)) {
+        selectStart = matchStart;
       }
     }
     if (getProperty(search, "copyToClipboard", false)) {
