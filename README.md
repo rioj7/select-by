@@ -13,6 +13,7 @@ So you can extend the selection
 * Forward: from the selection end (or cursor) to the next occurrence of a Regular Expression or end of the file
 * Backward: from the selection start (or cursor) search back for a Regular Expression or start of the file
 * ForwardNext: from the end of the Forward search, search for a different Regular Expression in the Forward direction. You can reuse captured groups from the forward Regular Expression.
+* ForwardNextExtendSelection: if the Forward Regular Expression matches at the start of the selection the ForwardNext Regular Expression extends the selection. Otherwise a normal ForwardNext search.
 * or combine Forward and Backward
 * or combine Forward and ForwardNext
 
@@ -27,15 +28,15 @@ The ranges are specified in the `settings.json` file for entry `selectby.regexes
     * `flags`: a string with the regex flags "i" and/or "m" (default: "")
     * `backward`: the regular expression to search from the selection start (or cursor) to the start of the file. If you want to select to the file start, construct a regex that will never be found. If this parameter is not present the selection start is not modified or starts at the cursor position. Or `false` if you want to override User setting.
     * `forward`: the regular expression to search for from the selection end (or cursor) to the end of the file. If you want to select to the file end, construct a regex that will never be found. If this parameter is not present the selection end is not modified or ends at the cursor position. Or `false` if you want to override User setting.
-    * `forwardNext`: the regular expression to search for starting at the end of the **forward** search to the end of the file. Or false (to override User setting). See explanation.
-    * `backwardInclude`: should the matched **backward** search text be part of the selection (default: true)
-    * `forwardInclude`: should the matched **forward** search text be part of the selection (default: true)
-    * `forwardNextInclude`: should the matched **forwardNext** search text be part of the selection (default: true)
-    * `forwardNextExtendSelection`: should we extend the selection with the matched **forwardNext** search text if the begin of the selection matches the **forward** regex (default: false). See explanation.
-    * `copyToClipboard`: copy the selection to the clipboard (default: false)
-    * `showSelection`: modify the selection to include the new searched positions. Useful if `copyToClipboard` is true. (default: true)
-    * `debugNotify`: show a notify message of the used search properties (User and Workspace properties are merged) (default: false)
-    * `moveby`: the regular expression to search for. Used only by Move By
+    * `forwardNext`: the regular expression to search for starting at the end of the **forward** search to the end of the file. Or `false` (to override User setting). [See explanation](#select-by-with-forwardnext).
+    * `backwardInclude`: should the matched **backward** search text be part of the selection (default: `true`)
+    * `forwardInclude`: should the matched **forward** search text be part of the selection (default: `true`)
+    * `forwardNextInclude`: should the matched **forwardNext** search text be part of the selection (default: `true`)
+    * `forwardNextExtendSelection`: should we extend the selection with the matched **forwardNext** search text if the begin of the selection matches the **forward** regex (default: `false`). [See explanation](#select-by-with-forwardnextextendselection).
+    * `copyToClipboard`: copy the selection to the clipboard (default: `false`)
+    * `showSelection`: modify the selection to include the new searched positions. Useful if `copyToClipboard` is `true`. (default: `true`)
+    * `debugNotify`: show a notify message of the used search properties (User and Workspace properties are merged) (default: `false`)
+    * `moveby`: the regular expression to search for. Used only by [Move By](#move-by)
 
 If newline characters are part of the regular expression you can determine if it is part of the selection (see example `SectionContent`).
 
@@ -77,13 +78,13 @@ You need to create 1 or more [key bindings in `keybindings.json`](https://code.v
   }
 ```
 
-## Select By with ForwardNext
+## Select By with forwardNext
 
 By using the **forward** and **forwardNext** Regular Expressions you can modify the selection from the current selection end, or cursor position, by searching first for the **forward** Regular Expression and from that location search again for a Regular Expression to determine the end of the new selection.
 
 It does not make sense to specify the **backward** Regular Expression. It has no effect on the result.
 
-It is possible in the **forwardNext** Regular Expression to use captured groups `()` from the **forward** Regular Expression. It uses a special syntax to fill in the captured groups. Use `{{n}}` to use captured group `n` from the **forward** Regular Expression. To use captured group 1 you use `{{1}}`.
+It is possible in the **forwardNext** Regular Expression to use captured groups `()` from the **forward** Regular Expression. It uses a special syntax to fill in the text from the captured groups. Use `{{n}}` to use captured group `n` from the **forward** Regular Expression. To use captured group 1 you use `{{1}}`.
 
 ### An example: Select the next string content
 
@@ -123,6 +124,8 @@ The `forwardNext` Regular Expression must match at the selection end. If there i
 At the moment it only works if `forwardNextInclude` is `true`.
 
 ### Example 1: Extend with the next item of a tuple
+
+This example extends the selection with the next tuple element if the selection start is after the tuple open paranthesis `(`.
 
 If there are no more elements in the tuple after the selection go to the next tuple.
 
@@ -230,7 +233,7 @@ There will be still a search done backward for: `%% article`. The extension does
         "flags": "i",
         "forward": "%% section",
         "forwardInclude": false,
-        "backward: false
+        "backward": false
       }
     }
 ```
@@ -247,14 +250,14 @@ To use Move By you need to create 1 or more [key bindings in `keybindings.json`]
 
 If called from the Command Palette nothing happens.
 
-The details of the search are specified in the `"args"` property of the key binding. It is an array of 4 strings. You must specify all 4, there are no default values:
+The details of the search are specified in the `"args"` property of the key binding. It is an array of 4 strings:
 * index 0: the key/name of the range you want to use as defined in the settings option `selectby.regexes`
-* index 1: `"forward"` | `"backward"` | `"moveby"` - which regex string should be used
+* index 1: `"forward"` | `"backward"` | `"moveby"` | `"forwardNext"` - which regex string should be used
 * index 2: `"prev"` | `"next"` - search direction - do you want to search for the **previous** or **next** occurrence of the Regular Expression (default: `"next"`)
 * index 3: `"start"` | `"end"` - should the cursor move to the **start** or the **end** of the found Regular Expression (default: `"end"`)
 * index 4: `"wrap"` | `"nowrap"` - optional argument: do we wrap to other side of the file and continue search if not found  (default: `"nowrap"`) (proposed by [Arturo Dent](https://github.com/rioj7/select-by/issues/8))
 
-If the last element of the array is a default value you can omit that argument. You can apply this rule multiple times.
+If the last element of the array is a default value you can omit that argument. You can apply this rule multiple times. But naming all 4 arguments helps in the readability of the keybinding.
 
 To use regular expressions that are not used in selections you can use the `"moveby"` property of the `selectby.regexes` elements or you can duplicate the `"forward"` or `"backward"` field. This property is just added to prevent confusion in the specification of `"args"` (`"forward"` does not mean to search in the forward direction)
 
