@@ -179,8 +179,8 @@ or
 ```json
     "selectby.regexes": {
       "extendWithSentensePart": {
-        "forward": "(?=[\s\S])",
-        "forwardNext": "[\s\S]*?[,.]",
+        "forward": "(?=[\\s\\S])",
+        "forwardNext": "[\\s\\S]*?[,.]",
         "forwardNextExtendSelection" : true
       }
     }
@@ -257,7 +257,7 @@ The details of the search are specified in the `"args"` property of the key bind
 * index 3: `"start"` | `"end"` - should the cursor move to the **start** or the **end** of the found Regular Expression (default: `"end"`)
 * index 4: `"wrap"` | `"nowrap"` - optional argument: do we wrap to other side of the file and continue search if not found  (default: `"nowrap"`) (proposed by [Arturo Dent](https://github.com/rioj7/select-by/issues/8))
 
-If the last element of the array is a default value you can omit that argument. You can apply this rule multiple times. But naming all 4 arguments helps in the readability of the keybinding.
+If the last element of the array is a default value you can omit that argument. You can apply this rule multiple times. But naming the first 4 arguments helps in the readability of the keybinding.
 
 To use regular expressions that are not used in selections you can use the `"moveby"` property of the `selectby.regexes` elements or you can duplicate the `"forward"` or `"backward"` field. This property is just added to prevent confusion in the specification of `"args"` (`"forward"` does not mean to search in the forward direction)
 
