@@ -28,11 +28,11 @@ function activate(context) {
     var regex;
     regex = getProperty(search, "backward");
     if (regex && isString(regex)) {
-      var incMatch = getProperty(search, "backwardInclude", true);
+      let incMatch = getProperty(search, "backwardInclude", true);
       regex = new RegExp(regex, flags);
       selectStart = 0;
       regex.lastIndex = 0;
-      var result;
+      let result;
       while ((result=regex.exec(docText)) != null) {
         if (result.index >= offsetCursor) break;
         selectStart = incMatch ? result.index : regex.lastIndex;
@@ -41,40 +41,86 @@ function activate(context) {
     var selectEnd = editor.document.offsetAt(editor.selection.end);
     regex = getProperty(search, "forward");
     var regexForwardNext = getProperty(search, "forwardNext");
-    var startForwardNext = selectEnd;
-    var forwardResult = [];
-    if (regex && isString(regex)) {
-      var incMatch = getProperty(search, "forwardInclude", true);
-      if (regexForwardNext && isString(regexForwardNext)) { // we have to flip the incMatch
-        incMatch = !incMatch;
-      }
-      regex = new RegExp(regex, flags);
-      regex.lastIndex = selectEnd;
-      selectEnd = docText.length;
-      var result;
-      while ((result=regex.exec(docText)) != null) {
-        selectEnd = incMatch ? regex.lastIndex : result.index;
-        startForwardNext = regex.lastIndex;
-        forwardResult = result.slice();
-        break;
-      }
-    }
-    if (regexForwardNext && isString(regexForwardNext)) {
-      selectStart = selectEnd;
-      var incMatch = getProperty(search, "forwardNextInclude", true);
-      regexForwardNext = regexForwardNext.replace(/{{(\d+)}}/g, (match, p1) => {
+    let forwardNextInclude = getProperty(search, "forwardNextInclude", true);
+    let forwardNextExtendSelection = getProperty(search, "forwardNextExtendSelection", false);
+    let searchForwardNext = (forwardResult, startForwardNext) => {
+      if (!(regexForwardNext && isString(regexForwardNext))) return [undefined, undefined];
+      let regexForwardNextModified = regexForwardNext.replace(/{{(\d+)}}/g, (match, p1) => {
         let groupNr = parseInt(p1, 10);
         if (groupNr >= forwardResult.length) { return ""; }
         return forwardResult[groupNr];
       });
-      regex = new RegExp(regexForwardNext, flags);
+      let regex = new RegExp(regexForwardNextModified, flags);
       regex.lastIndex = startForwardNext;
-      selectEnd = docText.length;
-      var result;
+      let matchStart = docText.length;
+      let matchEnd = docText.length;
+      let result;
+      let incMatch = forwardNextInclude;
       while ((result=regex.exec(docText)) != null) {
-        selectEnd = incMatch ? regex.lastIndex : result.index;
+        matchStart = result.index;
+        matchEnd = incMatch ? regex.lastIndex : result.index;
         break;
       }
+      return [matchStart, matchEnd];
+    };
+    var startForwardNext = selectEnd;
+    var forwardResult = [];
+    let needNewForwardSearch = true;
+    if (regex && isString(regex)) {
+      let forwardInclude = getProperty(search, "forwardInclude", true);
+      let incMatch = forwardInclude;
+      if (regexForwardNext && isString(regexForwardNext)) { // we have to flip the incMatch
+        incMatch = !incMatch;
+      }
+      regex = new RegExp(regex, flags);
+      if (forwardNextExtendSelection) {
+        selectStart = offsetCursor; // ignore any backward search
+        let result;
+        if (forwardInclude) {
+          regex.lastIndex = selectStart; // check if forward is found at begin of selection
+          if ((result=regex.exec(docText)) != null) {
+            if (result.index === selectStart) {
+              needNewForwardSearch = false;
+              forwardResult = result.slice();
+            }
+          }
+        } else { // check if forward is exact before selection
+          let matchEnd = docText.length;
+          regex.lastIndex = 0;
+          let result;
+          while ((result=regex.exec(docText)) != null) {
+            matchEnd = regex.lastIndex;
+            if (matchEnd >= offsetCursor) break;
+          }
+          if (matchEnd === offsetCursor) {
+            needNewForwardSearch = false;
+            forwardResult = result.slice();
+          }
+        }
+        if (!needNewForwardSearch) { // test if forwardNext is at selectEnd
+          if (searchForwardNext(forwardResult, selectEnd)[0] !== selectEnd) {
+            needNewForwardSearch = true;
+          }
+        }
+      }
+      if (needNewForwardSearch) {
+        regex.lastIndex = selectEnd;
+        selectEnd = docText.length;
+        startForwardNext = docText.length;
+        let result;
+        while ((result=regex.exec(docText)) != null) {
+          selectEnd = incMatch ? regex.lastIndex : result.index;
+          startForwardNext = regex.lastIndex;
+          forwardResult = result.slice();
+          break;
+        }
+      }
+    }
+    if (regexForwardNext && isString(regexForwardNext)) {
+      if (needNewForwardSearch) {
+        selectStart = selectEnd;
+      }
+      selectEnd = searchForwardNext(forwardResult, startForwardNext)[1];
     }
     if (getProperty(search, "copyToClipboard", false)) {
       vscode.env.clipboard.writeText(docText.substring(selectStart, selectEnd)).then((v)=>v, (v)=>null);

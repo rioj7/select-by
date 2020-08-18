@@ -31,6 +31,7 @@ The ranges are specified in the `settings.json` file for entry `selectby.regexes
     * `backwardInclude`: should the matched **backward** search text be part of the selection (default: true)
     * `forwardInclude`: should the matched **forward** search text be part of the selection (default: true)
     * `forwardNextInclude`: should the matched **forwardNext** search text be part of the selection (default: true)
+    * `forwardNextExtendSelection`: should we extend the selection with the matched **forwardNext** search text if the begin of the selection matches the **forward** regex (default: false). See explanation.
     * `copyToClipboard`: copy the selection to the clipboard (default: false)
     * `showSelection`: modify the selection to include the new searched positions. Useful if `copyToClipboard` is true. (default: true)
     * `debugNotify`: show a notify message of the used search properties (User and Workspace properties are merged) (default: false)
@@ -109,6 +110,87 @@ Define a keybinding:
     "command": "selectby.regex",
     "args": ["stringContent"]
   }
+```
+
+## Select By with forwardNextExtendSelection
+
+Based on idea by [johnnytemp](https://github.com/rioj7/select-by/pull/10).
+
+If you set `forwardNextExtendSelection` to `true` the selection is extended with the next occurrence of `forwardNext` Regular Expression if the start of the selection matches the `forward` Regular Expression.
+
+The `forwardNext` Regular Expression must match at the selection end. If there is not a match at the selection end we start a new `forward` search at the selection end, just like a normal `forward`-`forwardNext`. You can extend the `forwardNext` match to any position by prefixing the Regular Expression with `[\s\S]*?` or `.*?` (non greedy anything), depending if you want to include new lines or not.
+
+At the moment it only works if `forwardNextInclude` is `true`.
+
+### Example 1: Extend with the next item of a tuple
+
+If there are no more elements in the tuple after the selection go to the next tuple.
+
+Put this in your `settings.json` file:
+
+```json
+    "selectby.regexes": {
+      "extendNextTupleItem": {
+        "forward": "\\(",
+        "forwardNext": "[^,)]+(\\s*,\\s*)?",
+        "forwardInclude": false,
+        "forwardNextExtendSelection" : true
+      }
+    }
+```
+
+And define a keybinding.
+
+If it is not important that the selection starts at the first tuple item and the items are all word charcters you can use:
+
+```json
+    "selectby.regexes": {
+      "extendNextTupleItem2": {
+        "forward": "(?=\\w+)",
+        "forwardNext": "\\w+(\\s*,\\s*)?",
+        "forwardNextExtendSelection" : true
+      }
+    }
+```
+
+The `forward` Regular Expression searches for a location that is followed by a tuple item. It is an empty match.
+
+### Example 2: Extend selection always with forwardNext
+
+If you want to extend the selection always with `forwardNext`, you can set the `forward` Regular Expression to the string `(?=[\s\S])` or `(?=.)`, depending if you want to include new lines or not.
+
+The examples are to extend the selection with the next part of the sentence. If you have line breaks in the sentence you should use the second alternative.
+
+```json
+    "selectby.regexes": {
+      "extendWithSentensePart": {
+        "forward": "(?=.)",
+        "forwardNext": ".*?[,.]",
+        "forwardNextExtendSelection" : true
+      }
+    }
+```
+
+or
+
+```json
+    "selectby.regexes": {
+      "extendWithSentensePart": {
+        "forward": "(?=[\s\S])",
+        "forwardNext": "[\s\S]*?[,.]",
+        "forwardNextExtendSelection" : true
+      }
+    }
+```
+
+But this could already be done with this setting:
+
+```json
+    "selectby.regexes": {
+      "extendWithSentensePart": {
+        "forward": "[\\s\\S]*?[,.]"
+      }
+    }
 ```
 
 ## User and Workspace settings
