@@ -4,7 +4,7 @@
   "description": "Select text range based on certain criteria (regex,...) and move cursor by regex",
   "publisher": "rioj7",
   "license": "MIT",
-  "version": "0.8.2",
+  "version": "0.9.0",
   "engines": {"vscode": "^1.37.0"},
   "categories": ["Other"],
   "keywords": ["select","text","range", "move", "cursor"],
@@ -109,6 +109,18 @@
                 "moveby": {
                   "type": "string",
                   "description": "(Optional) regular expression to search for, Used only by moveby.regex"
+                },
+                "label": {
+                  "type": "string",
+                  "description": "(Optional) Label to use in the QuickPick list for the command selectby.regex"
+                },
+                "description": {
+                  "type": "string",
+                  "description": "(Optional) Description to use in the QuickPick list on the same line for the command selectby.regex"
+                },
+                "detail": {
+                  "type": "string",
+                  "description": "(Optional) Detail to use in the QuickPick list on a separate line for the command selectby.regex"
                 }
               },
               "dependencies": {

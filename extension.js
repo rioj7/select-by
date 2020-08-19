@@ -4,8 +4,9 @@ function activate(context) {
 
   var getProperty = (obj, prop, deflt) => { return obj.hasOwnProperty(prop) ? obj[prop] : deflt; };
   var isString = obj => typeof obj === 'string';
+  var getConfigRegExes = () => vscode.workspace.getConfiguration('selectby', null).get('regexes');
   var getConfigRegEx = regexKey => {
-    let regexes = vscode.workspace.getConfiguration('selectby', null).get('regexes');
+    let regexes = getConfigRegExes();
     if (!regexes.hasOwnProperty(regexKey)) {
       vscode.window.showErrorMessage(regexKey+" not found.");
       return undefined;
@@ -16,6 +17,7 @@ function activate(context) {
     }
     return search;
   };
+  var recentlyUsedSelectBy = [];
   var processRegEx = (regexKey, editor) => {
     if (!isString(regexKey)) { regexKey = 'regex' + regexKey.toString(10); }
     let search = getConfigRegEx(regexKey);
@@ -130,12 +132,51 @@ function activate(context) {
     }
   };
 
-  var selectbyRegEx = (editor, args) => {
-    if (args === undefined) {
-      vscode.window.showInformationMessage("Need keybinding with \"args\" property");
-      return; // TODO use QuickSelect to get regexKey
-    }
-    processRegEx(args[0], editor);
+  var selectbyRegEx = async (editor, args) => {
+    let regexKey = await new Promise(resolve => {
+      if (args !== undefined) {
+        resolve(args[0]);
+        return;
+      }
+      let regexes = getConfigRegExes();
+      let qpItems = [];
+      for (const key in regexes) {
+        if (!regexes.hasOwnProperty(key)) { continue; }
+        const regex = regexes[key];
+        if (!(getProperty(regex, 'backward') || getProperty(regex, 'forward') || getProperty(regex, 'forwardNext'))) { continue; }
+        let label = getProperty(regex, 'label', key);
+        if (getProperty(regex, 'copyToClipboard')) { label += ' $(clippy)'; }
+        if (getProperty(regex, 'debugNotify')) { label += ' $(debug)'; }
+        let description = getProperty(regex, 'description');
+        let detail = getProperty(regex, 'detail');
+        qpItems.push( { idx: qpItems.length, regexKey: key, label, description, detail } );
+      }
+      if (qpItems.length === 0) {
+        vscode.window.showInformationMessage("No usable regex found");
+        resolve(undefined);
+        return;
+      }
+      const sortIndex = a => {
+        let idx = recentlyUsedSelectBy.findIndex( e => e === a.regexKey );
+        return idx >= 0 ? idx : recentlyUsedSelectBy.length + a.idx;
+      };
+      // we could update recentlyUsedSelectBy and remove regexKeys that are not found in the setting
+      // TODO when we persistently save recentlyUsedSelectBy
+      qpItems.sort( (a, b) => sortIndex(a) - sortIndex(b) );
+      resolve(vscode.window.showQuickPick(qpItems)
+        .then( item => {
+          if (item) {
+            let regexKey = item.regexKey;
+            recentlyUsedSelectBy = [regexKey].concat(recentlyUsedSelectBy.filter( e => e !== regexKey ));
+          }
+          return item;
+      }));
+    }).then( item => {
+      if (isString(item)) return item;
+      return item ? item.regexKey : undefined;
+    });
+    if (regexKey === undefined) { return; }
+    processRegEx(regexKey, editor);
   };
 
   var findRegexLocation = (editor, regexKey, regexFBM, nextPrev, startEnd, wrapCursor) => {

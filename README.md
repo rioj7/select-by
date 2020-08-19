@@ -37,8 +37,9 @@ The ranges are specified in the `settings.json` file for entry `selectby.regexes
     * `showSelection`: modify the selection to include the new searched positions. Useful if `copyToClipboard` is `true`. (default: `true`)
     * `debugNotify`: show a notify message of the used search properties (User and Workspace properties are merged) (default: `false`)
     * `moveby`: the regular expression to search for. Used only by [Move By](#move-by)
+    * `label`, `description`, `detail`: when SelectBy is called from the command palette it shows a QuickPick list. These 3 properties (`strings`) are used in the construction of the [QuickPickItem](https://code.visualstudio.com/api/references/vscode-api#QuickPickItem). The default value for `label` is the key name of the range. The label is decorated with additional icons in case the range contains the parameters `copyToClipboard` or `debugNotify`. In the 3 properties you can [use other icons](https://microsoft.github.io/vscode-codicons/dist/codicon.html) with the `$(<name>)`-syntax.
 
-If newline characters are part of the regular expression you can determine if it is part of the selection (see example `SectionContent`).
+If newline characters are part of the regular expression you can determine if it is part of the selection (see example [`SectionContent`](#an-example)).
 
 ## An example
 
@@ -77,6 +78,8 @@ You need to create 1 or more [key bindings in `keybindings.json`](https://code.v
     "args": ["SectionContent"]
   }
 ```
+
+If you create a keybinding without an `args` property a QuickPick list, with recently used items, will be shown where you can select a range to use.
 
 ## Select By with forwardNext
 
@@ -137,7 +140,9 @@ Put this in your `settings.json` file:
         "forward": "\\(",
         "forwardNext": "[^,)]+(\\s*,\\s*)?",
         "forwardInclude": false,
-        "forwardNextExtendSelection" : true
+        "forwardNextExtendSelection": true,
+        "label": "Extend next tuple item $(arrow-right)",
+        "description": "from tuple start"
       }
     }
 ```
@@ -151,7 +156,7 @@ If it is not important that the selection starts at the first tuple item and the
       "extendNextTupleItem2": {
         "forward": "(?=\\w+)",
         "forwardNext": "\\w+(\\s*,\\s*)?",
-        "forwardNextExtendSelection" : true
+        "forwardNextExtendSelection": true
       }
     }
 ```
@@ -169,7 +174,7 @@ The examples are to extend the selection with the next part of the sentence. If 
       "extendWithSentensePart": {
         "forward": "(?=.)",
         "forwardNext": ".*?[,.]",
-        "forwardNextExtendSelection" : true
+        "forwardNextExtendSelection": true
       }
     }
 ```
@@ -181,7 +186,7 @@ or
       "extendWithSentensePart": {
         "forward": "(?=[\\s\\S])",
         "forwardNext": "[\\s\\S]*?[,.]",
-        "forwardNextExtendSelection" : true
+        "forwardNextExtendSelection": true
       }
     }
 ```
@@ -311,4 +316,3 @@ Define 2 key bindings (you can change the assigned keys)
 
 * Support for Multi Cursors
 * Move By called from Command Palette, Enter/Select options and remember RegExes for this section of VSC
-* Select By called from Command Palette, use QuickPick to choose a defined range.
