@@ -33,6 +33,7 @@ The ranges are specified in the `settings.json` file for entry `selectby.regexes
     * `forwardInclude`: should the matched **forward** search text be part of the selection (default: `true`)
     * `forwardNextInclude`: should the matched **forwardNext** search text be part of the selection (default: `true`)
     * `forwardNextExtendSelection`: should we extend the selection with the matched **forwardNext** search text if the begin of the selection matches the **forward** regex (default: `false`). [See explanation](#select-by-with-forwardnextextendselection).
+    * `surround` : select the text around the current selection that matches the regular expression, the selection is somewhere in the text to select, or false (to override User setting). [See explanation](#select-by-with-surround).
     * `copyToClipboard`: copy the selection to the clipboard (default: `false`)
     * `showSelection`: modify the selection to include the new searched positions. Useful if `copyToClipboard` is `true`. (default: `true`)
     * `debugNotify`: show a notify message of the used search properties (User and Workspace properties are merged) (default: `false`)
@@ -200,6 +201,22 @@ But this could already be done with this setting:
       }
     }
 ```
+
+## Select By with Surround
+
+If the cursor or selection is inside of the text you want to select and can be described with a single regular expression you use the `surround` Regular Expression.
+
+If you place the cursor somewhere inside a floating point number and you want to select the number you can use the following setting:
+
+```json
+    "selectby.regexes": {
+      "selectFloat": {
+        "surround": "[-+]?\\d+(\\.\\d+)?([eE][-+]?\\d+)?[fF]?"
+      }
+    }
+```
+
+For fast access you can [create a keybinding](#select-by-with-keybindings) for this just like the `Ctrl+D` for select word.
 
 ## User and Workspace settings
 The Workspace/folder setting does override the global User setting. The settings are deep-merged.

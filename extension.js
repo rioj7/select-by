@@ -124,6 +124,19 @@ function activate(context) {
       }
       selectEnd = searchForwardNext(forwardResult, startForwardNext)[1];
     }
+    regex = getProperty(search, "surround");
+    if (regex && isString(regex)) {
+      regex = new RegExp(regex, flags);
+      regex.lastIndex = 0;
+      let result;
+      while ((result=regex.exec(docText)) != null) {
+        if (result.index <= offsetCursor && selectEnd <= regex.lastIndex) {
+          selectStart = result.index;
+          selectEnd   = regex.lastIndex;
+          break;
+        }
+      }
+    }
     if (getProperty(search, "copyToClipboard", false)) {
       vscode.env.clipboard.writeText(docText.substring(selectStart, selectEnd)).then((v)=>v, (v)=>null);
     }
@@ -143,7 +156,7 @@ function activate(context) {
       for (const key in regexes) {
         if (!regexes.hasOwnProperty(key)) { continue; }
         const regex = regexes[key];
-        if (!(getProperty(regex, 'backward') || getProperty(regex, 'forward') || getProperty(regex, 'forwardNext'))) { continue; }
+        if (!(getProperty(regex, 'backward') || getProperty(regex, 'forward') || getProperty(regex, 'forwardNext') || getProperty(regex, 'surround'))) { continue; }
         let label = getProperty(regex, 'label', key);
         if (getProperty(regex, 'copyToClipboard')) { label += ' $(clippy)'; }
         if (getProperty(regex, 'debugNotify')) { label += ' $(debug)'; }
