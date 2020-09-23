@@ -18,6 +18,7 @@ function activate(context) {
     return search;
   };
   var recentlyUsedSelectBy = [];
+  var recentlyUsedMoveBy = [];
   var processRegEx = (regexKey, editor) => {
     if (!isString(regexKey)) { regexKey = 'regex' + regexKey.toString(10); }
     let search = getConfigRegEx(regexKey);
@@ -192,36 +193,36 @@ function activate(context) {
     processRegEx(regexKey, editor);
   };
 
-  var findRegexLocation = (editor, regexKey, regexFBM, nextPrev, startEnd, wrapCursor) => {
-    let search = getConfigRegEx(regexKey);
-    if (search === undefined) { return undefined; }
-
+  var moveBy_regex_Ask = async () => {
+    return vscode.window.showInputBox({"ignoreFocusOut":true, "prompt": "RegEx to move to"})
+    // return vscode.window.showQuickPick(recentlyUsedMoveBy)
+    .then( item => {
+      if (isString(item) && item.length === 0) { item = undefined; } // accepted an empty inputbox
+      if (item) {
+        recentlyUsedMoveBy = [item].concat(recentlyUsedMoveBy.filter( e => e !== item ));
+      }
+      return item;
+    });
+  };
+  var findRegexLocation = (editor, selectionN, regex, findPrev, findStart, wrapCursor) => {
     var docText = editor.document.getText();
-
-    var findPrev = (nextPrev === "prev");
-    var findStart = (startEnd === "start");
-    wrapCursor = (wrapCursor === "wrap");
     var wrappedCursor = false;
-    var offsetCursor = editor.document.offsetAt(findPrev ? editor.selection.start : editor.selection.end);
+    var offsetCursor = editor.document.offsetAt(findPrev ? selectionN.start : selectionN.end);
     var location = offsetCursor;
-    var flags = getProperty(search, "flags", "") + "g";
-    var regex;
-    regex = getProperty(search, regexFBM);
-    if (regex && isString(regex)) {
-      regex = new RegExp(regex, flags);
+    if (regex) {
       regex.lastIndex = findPrev ? 0 : offsetCursor;
       while (true) {
         let prevLastIndex = regex.lastIndex;
-        let result=regex.exec(docText);
+        let result = regex.exec(docText);
         if (result === null) {
           if (wrapCursor) {
             wrapCursor = undefined; // only wrap once
             if (findPrev) {
-              break; // leave cursor at current location
+              return undefined; // leave cursor at current location, not found anywhere in the file
             } else {
               regex.lastIndex = 0;
               result = regex.exec(docText);
-              if (result == null) { break; } // leave cursor at current location
+              if (result == null) { return undefined; } // leave cursor at current location, not found anywhere in the file
               if (result.index == 0) { // found at start of file
                 location = findStart ? result.index : regex.lastIndex;
                 break;
@@ -232,7 +233,7 @@ function activate(context) {
               continue;
             }
           }
-          break;
+          return undefined; // not found, skip cursor or leave at current location
         }
         var resultLocation = findStart ? result.index : regex.lastIndex;
         if (prevLastIndex === regex.lastIndex) { // search for empty line
@@ -254,7 +255,7 @@ function activate(context) {
               regex.lastIndex = 0;
               continue;
             }
-            break;
+          return undefined; // not found, skip cursor or leave at current location
           }
           location = resultLocation;
         } else { // Next
@@ -267,13 +268,41 @@ function activate(context) {
     }
     return location;
   };
-  var movebyRegEx = (editor, args) => {
-    if (args === undefined) return; // TODO use QuickSelect to construct an args array
-    var location = findRegexLocation(editor, args[0], args[1], args[2], args[3], args[4]);
-    if (location === undefined) return;
-    location = editor.document.positionAt(location);
-    editor.selection = new vscode.Selection(location, location);
-    var rng = new vscode.Range(location, location);
+  var movebyRegEx = async (editor, args) => {
+    if (args === undefined) { args = {}; } // TODO use QuickSelect to construct an args array
+    let regex, flagsObj, properties;
+    if (Array.isArray(args)) {
+      let regexKey = args[0];
+      let regexFBM = args[1];
+      let search = getConfigRegEx(regexKey);
+      if (search === undefined) { return; }
+      regex = getProperty(search, regexFBM);
+      flagsObj = search;
+      properties = args.slice(2);
+    } else {
+      regex = getProperty(args, 'regex');
+      if (!regex) {
+        regex = await moveBy_regex_Ask();
+      }
+      flagsObj = args;
+      properties = getProperty(args, 'properties', []);
+    }
+    if (!(regex && isString(regex))) { return; } // not found or Escaped Quickpick
+    let flags = getProperty(flagsObj, 'flags', '') + 'g';
+    regex = new RegExp(regex, flags);
+    let findPrev = properties.indexOf('prev') >= 0;
+    let findStart = properties.indexOf('start') >= 0;
+    let wrapCursor = properties.indexOf('wrap') >= 0;
+    var locations = editor.selections
+          .map(s => findRegexLocation(editor, s, regex, findPrev, findStart, wrapCursor))
+          .filter( loc => loc !== undefined)
+          .map( location => {
+            location = editor.document.positionAt(location);
+            return new vscode.Selection(location, location);
+          });
+    if (locations.length === 0) return;
+    editor.selections = locations;
+    var rng = new vscode.Range(editor.selection.start, editor.selection.start);
     editor.revealRange(rng, vscode.TextEditorRevealType[vscode.workspace.getConfiguration('moveby', null).get('revealType')]);
   };
 

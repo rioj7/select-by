@@ -266,13 +266,25 @@ You can move the cursor based on Regular Expressions.
 
 The exported command is: `moveby.regex`
 
-Move By uses the regex definitions as defined for Select By.
+Move By uses the regex definitions as defined for Select By or specified in the `"args"` property of the key binding.
 
-To use Move By you need to create 1 or more [key bindings in `keybindings.json`](https://code.visualstudio.com/docs/getstarted/keybindings).
+If called from the Command Palette it behaves the same as a [key binding with an `"args"` property that is an Object](#args-of-keybinding-is-an-object) with the content:
 
-If called from the Command Palette nothing happens.
+```
+    "args": {
+      "ask": true,
+      "properties": ["next", "end", "nowrap"]
+    }
+```
 
-The details of the search are specified in the `"args"` property of the key binding. It is an array of 4 strings:
+To use fixed Regular Expressions or different properties for Move By you need to create 1 or more [key bindings in `keybindings.json`](https://code.visualstudio.com/docs/getstarted/keybindings).
+
+The details of the search are specified in the `"args"` property of the key binding. The `"args"` property can be an Array or an Object.
+
+## args of keybinding is an Array
+
+If the `"args"` property of the key binding is an Array the meaning of the 5 strings are:
+
 * index 0: the key/name of the range you want to use as defined in the settings option `selectby.regexes`
 * index 1: `"forward"` | `"backward"` | `"moveby"` | `"forwardNext"` - which regex string should be used
 * index 2: `"prev"` | `"next"` - search direction - do you want to search for the **previous** or **next** occurrence of the Regular Expression (default: `"next"`)
@@ -283,11 +295,61 @@ If the last element of the array is a default value you can omit that argument. 
 
 To use regular expressions that are not used in selections you can use the `"moveby"` property of the `selectby.regexes` elements or you can duplicate the `"forward"` or `"backward"` field. This property is just added to prevent confusion in the specification of `"args"` (`"forward"` does not mean to search in the forward direction)
 
-If the Regular Expression is not found the cursor will not change. If there was a text selection the selection is removed and the cursor changes to the start or end of the selection depending on the direction of the search.
+## args of keybinding is an Object
 
-With the setting `"moveby.revealType"` you can change the behavior of how the cursor should be revealed after the move. In the Settings UI, group **Extensions** | **Select By**, it is a dropdown box with possible values. These strings are identical to the VSC API enum [TextEditorRevealType](https://code.visualstudio.com/api/references/vscode-api#TextEditorRevealType).
+If the `"args"` property of the key binding is an Object it can have the following properties:
 
-You can create a key binding with the UI of VSC but you have to add the `"args"` property by modifying `keybindings.json`. If you do not define the `"args"` property nothing happens if you press the key binding.
+* `flags`: a string with the regex flags "i" and/or "m" (default: "")
+* `regex`: the regular expression to use, (default: ask for regular expression with InputBox)
+* `ask`: a boolean to signal that the regex should be asked from the user, it is optional because if the `regex` property is missing it will be asked.<br/>Just to remind you later which regex is used.
+* `properties`: an Array of strings with the values corresponding to Array indexes (2,3,4) from the section: [args of keybinding is an Array](#args-of-keybinding-is-an-array)<br/>The order of the properties is not important. (default: `["next", "end", "nowrap"]`)
+
+If you want to move the cursor(s) to the first character inside the next Python string you can use:
+
+```
+  {
+    "key": "ctrl+f6",  // or any other key combo
+    "when": "editorTextFocus",
+    "command": "moveby.regex",
+    "args": {
+      "regex": "('''|\"\"\"|'|\")",
+      "properties": ["next", "end"]
+    }
+  }
+```
+
+If you want to move the cursor(s) to the start of the next regex asked from the user you can use:
+
+```
+  {
+    "key": "ctrl+shift+f6",  // or any other key combo
+    "when": "editorTextFocus",
+    "command": "moveby.regex",
+    "args": {
+      "ask": true,
+      "properties": ["next", "start"]
+    }
+  }
+```
+
+In a next version it will use a selection list with recently used entries on top. The default QuickPick list does not allow to enter a new item. And a list of starting Regular Expressions.
+
+## `moveby` and Multi Cursor
+
+`moveby.regex` supports multi cursor. For each cursor the search is performed and the cursor is moved to the new location.
+
+If the Regular Expression is not found for a particular selection/cursor the behavior depends on the number of cursors that have found a new location:
+
+* if none have found a new location nothing happens and selections/cursors do not change
+* if one or more cursors have found a new location this selection/cursor is removed, so you are sure the cursors remaining are at valid locations, they can be at previous locations of another cursor
+
+If more than one cursor end at the same location they will be collapsed into one.
+
+## Reveal the new cursor locations
+
+With the setting `"moveby.revealType"` you can change the behavior of how the cursor should be revealed after the move. In the Settings UI, group **Extensions** | **Select By**, it is a dropdown box with possible values. These strings are identical to the VSC API enum [TextEditorRevealType](https://code.visualstudio.com/api/references/vscode-api#TextEditorRevealType). If there are multiple cursors the first cursor is used.
+
+You can create a key binding with the UI of VSC but you have to add the `"args"` property by modifying `keybindings.json`. If you do not define the `"args"` property it behaves as called from the Command Palette.
 
 An example key binding:
 
