@@ -1,6 +1,7 @@
-The extension has commands for 2 things:
+The extension has commands for 3 things:
 
 * [Select By](#select-by): modify the selection based on Regular Expressions
+* [Select By Paste Clipboard](#select-by-paste-clipboard): Replace selection with clipboard content
 * [Move By](#move-by): move the cursor based on Regular Expressions
 
 # Select By
@@ -259,6 +260,24 @@ There will be still a search done backward for: `%% article`. The extension does
       }
     }
 ```
+
+# Select By Paste Clipboard
+
+If you paste the clipboard content with Ctrl+V you loose the selection.
+
+The command `Paste clipboard and select` (`selectby.pasteClipboard`) replaces the current selection with the content of the clipboard and keep it selected.
+
+If you need it regularly a keybinding can be handy
+
+```json
+  {
+    "key": "ctrl+k ctrl+v",
+    "when": "editorTextFocus",
+    "command": "selectby.pasteClipboard"
+  }
+```
+
+It only works for single selection. If you use a copy with multi cursor selections the content of the clipboard does not show where each selection begins. There are extra empty lines added but they could also be part of a selection.
 
 # Move By
 

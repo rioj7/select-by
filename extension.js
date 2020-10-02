@@ -312,6 +312,16 @@ function activate(context) {
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.regex4', (editor, edit, args) => { processRegEx(4, editor);}) );
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.regex5', (editor, edit, args) => { processRegEx(5, editor);}) );
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.regex', (editor, edit, args) => { selectbyRegEx(editor, args);}) );
+  context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.pasteClipboard', async (editor, edit, args) => {
+    if (editor.selections.length > 1) {
+      vscode.window.showInformationMessage("Multi Cursor Paste and select not supported yet.");
+      return;
+    }
+    let content = await vscode.env.clipboard.readText();
+    if (isString(content)) {
+      editor.edit( editBuilder => editBuilder.replace(editor.selection, content) ); // need new editBuilder after await
+    }
+  }) );
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('moveby.regex', (editor, edit, args) => { movebyRegEx(editor, args);}) );
 };
 

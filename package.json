@@ -4,7 +4,7 @@
   "description": "Select text range based on certain criteria (regex,...) and move cursor by regex",
   "publisher": "rioj7",
   "license": "MIT",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "engines": {"vscode": "^1.37.0"},
   "categories": ["Other"],
   "keywords": ["select","text","range", "move", "cursor"],
@@ -17,6 +17,7 @@
     "onCommand:selectby.regex4",
     "onCommand:selectby.regex5",
     "onCommand:selectby.regex",
+    "onCommand:selectby.pasteClipboard",
     "onCommand:moveby.regex"
   ],
   "contributes": {
@@ -44,6 +45,10 @@
       {
         "command": "selectby.regex",
         "title": "Select text range based on regex"
+      },
+      {
+        "command": "selectby.pasteClipboard",
+        "title": "Paste clipboard and select"
       },
       {
         "command": "moveby.regex",
