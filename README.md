@@ -2,6 +2,7 @@ The extension has commands for 3 things:
 
 * [Select By](#select-by): modify the selection based on Regular Expressions
 * [Select By Paste Clipboard](#select-by-paste-clipboard): Replace selection with clipboard content
+* [Select By Line Number](#select-by-line-number): Place cursor based on line number, uses boolean expression
 * [Move By](#move-by): move the cursor based on Regular Expressions
 
 # Select By
@@ -265,7 +266,7 @@ There will be still a search done backward for: `%% article`. The extension does
 
 If you paste the clipboard content with Ctrl+V you loose the selection.
 
-The command `Paste clipboard and select` (`selectby.pasteClipboard`) replaces the current selection with the content of the clipboard and keep it selected.
+The command **Paste clipboard and select** (`selectby.pasteClipboard`) replaces the current selection with the content of the clipboard and keep it selected.
 
 If you need it regularly a keybinding can be handy
 
@@ -278,6 +279,47 @@ If you need it regularly a keybinding can be handy
 ```
 
 It only works for single selection. If you use a copy with multi cursor selections the content of the clipboard does not show where each selection begins. There are extra empty lines added but they could also be part of a selection.
+
+# Select By Line Number
+
+If you want to place a cursor on each line where the line number matches multiple boolean expressions you can use the command **Place cursor based on line number, uses boolean expression** (`selectby.lineNr`).
+
+The boolean expression uses the following variables:
+
+* `c` : contains the line number of the cursor or the start of the first selection.
+* `n` : contains the line number of the line under test, each line of the current document is tested
+* `k` : is a placeholder to signify a modulo placement. Can only be used in an expression like `c + 6 k`. Meaning everyline that is a multiple (`k ∈ ℕ`) of 6 from the current line. Every expression of the form `c + 6 k` is transformed to <code>((n-c)%<em>number</em>==0 && n>=c)</code>.
+
+The input box for the lineNr expression remembers the last entered lineNr expression for this session.
+
+The command can be used in a keybinding:
+
+```json
+  {
+    "key": "ctrl+k ctrl+k",
+    "when": "editorTextFocus",
+    "command": "selectby.lineNr",
+    "args": { "lineNrEx": "c+5k && n-c<100" }
+  }
+```
+
+This selects every 5<sup>th</sup> line for the next 100 lines.
+
+## Place multiple cursors per block or relative to block start
+
+The expression `c + 6 k` places a cursor at the start of a modulo _block_. Maybe you want to place cursors at lines 1, 3 and 4 relative to the block start. You can use an expression like:
+
+```
+n>=c && ( (n-c)%6==1 || (n-c)%6==3 || (n-c)%6==4 )
+```
+
+If you want to place cursors at the first 3 lines of a block use:
+
+```
+n>=c && (n-c)%6<3
+```
+
+This can also be achieved with `c+6k` followed by **Selection** | **Add Cursor Below** 2 times
 
 # Move By
 
