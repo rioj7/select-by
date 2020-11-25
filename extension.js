@@ -17,6 +17,20 @@ function activate(context) {
     }
     return search;
   };
+  function expressionFunc(expr, args) {
+    try {
+      return Function(`"use strict";return (function calcexpr(${args}) {
+        let val = ${expr};
+        if (isNaN(val)) { throw new Error("Error calculating: ${expr}"); }
+        return val;
+      })`)();
+    }
+    catch (ex) {
+      let message = ex.message;
+      if (message.indexOf("';'") >= 0) { message = "Incomplete expression"; }
+      throw new Error(`${message} in ${expr}`);
+    }
+  }
   var recentlyUsedSelectBy = [];
   var recentlyUsedMoveBy = [];
   var processRegEx = (regexKey, editor) => {
@@ -286,6 +300,16 @@ function activate(context) {
     var rng = new vscode.Range(editor.selection.start, editor.selection.start);
     editor.revealRange(rng, vscode.TextEditorRevealType[vscode.workspace.getConfiguration('moveby', null).get('revealType')]);
   };
+  var movebyLocations = (editor, newLocation) => {
+    var locations = editor.selections
+          .map(newLocation)
+          .filter( loc => loc !== undefined)
+          .map( location => {
+            location = editor.document.positionAt(location);
+            return new vscode.Selection(location, location);
+          });
+    updateEditorSelections(editor, locations);
+  };
   var movebyRegEx = async (editor, args) => {
     if (args === undefined) { args = {}; } // TODO use QuickSelect to construct an args array
     let regex, flagsObj, properties;
@@ -311,14 +335,21 @@ function activate(context) {
     let findPrev = properties.indexOf('prev') >= 0;
     let findStart = properties.indexOf('start') >= 0;
     let wrapCursor = properties.indexOf('wrap') >= 0;
-    var locations = editor.selections
-          .map(s => findRegexLocation(editor, s, regex, findPrev, findStart, wrapCursor))
-          .filter( loc => loc !== undefined)
-          .map( location => {
-            location = editor.document.positionAt(location);
-            return new vscode.Selection(location, location);
-          });
-    updateEditorSelections(editor, locations);
+    movebyLocations(editor, s => findRegexLocation(editor, s, regex, findPrev, findStart, wrapCursor));
+  };
+  function calculateLocation(editor, selection, lineNrExFunc, charNrExFunc) {
+    let arg = {selection: selection, currentLine: editor.document.lineAt(selection.start.line).text};
+    return editor.document.offsetAt(new vscode.Position(Math.floor(lineNrExFunc(arg)), Math.floor(charNrExFunc(arg))));
+  }
+  const transformCalculationEx = str => str.replace(/selection|currentLine/g, 'arg.$&');
+  var movebyCalculation = async (editor, args) => {
+    if (args === undefined) { args = {}; }
+    let lineNrEx = getProperty(args, 'lineNrEx', 'selection.start.line');
+    let charNrEx = getProperty(args, 'charNrEx');
+    if (!charNrEx) { return; }
+    let lineNrExFunc = expressionFunc(transformCalculationEx(lineNrEx), 'arg');
+    let charNrExFunc = expressionFunc(transformCalculationEx(charNrEx), 'arg');
+    movebyLocations(editor, s => calculateLocation(editor, s, lineNrExFunc, charNrExFunc));
   };
 
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.regex1', (editor, edit, args) => { processRegEx(1, editor);}) );
@@ -338,25 +369,11 @@ function activate(context) {
     }
   }) );
   let transform_line_modulo = (match, number) => `((n-c)%${number}==0 && n>=c)`;
-  function lineNrExFunction(expr) {
-    try {
-      return Function(`"use strict";return (function calcexpr(c,n) {
-        let val = ${expr};
-        if (isNaN(val)) { throw new Error("Error calculating: ${expr}"); }
-        return val;
-      })`)();
-    }
-    catch (ex) {
-      let message = ex.message;
-      if (message.indexOf("';'") >= 0) { message = "Incomplete expression"; }
-      throw new Error(`${message} in ${expr}`);
-    }
-  }
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.lineNr', async (editor, edit, args) => {
     let lineNrEx = await selectBy_lineNrEx_Ask(args);
     if (!isString(lineNrEx) || lineNrEx.length == 0) { return; }
     try {
-      let lineNrExFunc = lineNrExFunction(lineNrEx.replace(/c\s*\+\s*(\d+)\s*k/, transform_line_modulo));
+      let lineNrExFunc = expressionFunc(lineNrEx.replace(/c\s*\+\s*(\d+)\s*k/g, transform_line_modulo), 'c,n');
       let currentLineNr = editor.selection.start.line;
       let lineCount = editor.document.lineCount;
       let locations = [];
@@ -372,6 +389,7 @@ function activate(context) {
     }
   }) );
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('moveby.regex', (editor, edit, args) => { movebyRegEx(editor, args);}) );
+  context.subscriptions.push(vscode.commands.registerTextEditorCommand('moveby.calculation', (editor, edit, args) => { movebyCalculation(editor, args);}) );
 };
 
 function deactivate() {}

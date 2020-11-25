@@ -3,7 +3,7 @@ The extension has commands for 3 things:
 * [Select By](#select-by): modify the selection based on Regular Expressions
 * [Select By Paste Clipboard](#select-by-paste-clipboard): Replace selection with clipboard content
 * [Select By Line Number](#select-by-line-number): Place cursor based on line number, uses boolean expression
-* [Move By](#move-by): move the cursor based on Regular Expressions
+* [Move By](#move-by): move the cursor based on Regular Expressions or a Calculation
 
 # Select By
 Select part of the file content surrounding the selection based on Regular Expressions. The current selection is extended by searching forward and or backward or forward twice. If there is no current selection the cursor position is used.
@@ -288,7 +288,7 @@ The boolean expression uses the following variables:
 
 * `c` : contains the line number of the cursor or the start of the first selection.
 * `n` : contains the line number of the line under test, each line of the current document is tested
-* `k` : is a placeholder to signify a modulo placement. Can only be used in an expression like `c + 6 k`. Meaning everyline that is a multiple (`k ∈ ℕ`) of 6 from the current line. Every expression of the form `c + 6 k` is transformed to <code>((n-c)%<em>number</em>==0 && n>=c)</code>.
+* `k` : is a placeholder to signify a modulo placement. Can only be used in an expression like `c + 6 k`. Meaning every line that is a multiple (k ∈ ℕ) of 6 from the current line. Every expression of the form `c + 6 k` is transformed to <code>((n-c)%<em>number</em>==0 && n>=c)</code>.
 
 The input box for the lineNr expression remembers the last entered lineNr expression for this session.
 
@@ -323,7 +323,9 @@ This can also be achieved with `c+6k` followed by **Selection** | **Add Cursor B
 
 # Move By
 
-You can move the cursor based on Regular Expressions.
+You can move the cursor based on [Regular Expressions](#move-by-regular-expression) or using a [Calculation](#move-by-calculation).
+
+## Move By Regular Expression
 
 The exported command is: `moveby.regex`
 
@@ -360,7 +362,7 @@ To use regular expressions that are not used in selections you can use the `"mov
 
 If the `"args"` property of the key binding is an Object it can have the following properties:
 
-* `flags`: a string with the regex flags "i" and/or "m" (default: "")
+* `flags`: a string with the regex flags "`i`" and/or "`m`" (default: "")
 * `regex`: the regular expression to use, (default: ask for regular expression with InputBox)
 * `ask`: a boolean to signal that the regex should be asked from the user, it is optional because if the `regex` property is missing it will be asked.<br/>Just to remind you later which regex is used.
 * `properties`: an Array of strings with the values corresponding to Array indexes (2,3,4) from the section: [args of keybinding is an Array](#args-of-keybinding-is-an-array)<br/>The order of the properties is not important. (default: `["next", "end", "nowrap"]`)
@@ -395,9 +397,44 @@ If you want to move the cursor(s) to the start of the next regex asked from the 
 
 In a next version it will use a selection list with recently used entries on top. The default QuickPick list does not allow to enter a new item. And a list of starting Regular Expressions.
 
+## Move By Calculation
+
+The exported command is: `moveby.calculation`
+
+**All positions (line and char) are 0 based.** The first line has number 0.
+
+Move By uses 2 calculation expressions defined in the `"args"` property of the key binding.
+
+* `lineNrEx` : calculate the new line number of the selection, default value is `"selection.start.line"` (the line number of the start of the selection)
+* `charNrEx` : calculate the new character position of the selection
+
+The expressions can be any JavaScript expression that results in a number. The number is converted to an int with [`Math.floor`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/floor)
+
+The expressions can use a number of variables:
+
+* `selection.start.line`
+* `selection.start.character`
+* `selection.end.line`
+* `selection.end.character`
+* `currentLine` : a string with the text of the line where the selection starts
+* `currentLine.length` : the length of `currentLine` variable
+
+If you want to move the cursor to the midpoint of the line the cursor is on you can use
+
+```
+  {
+    "key": "ctrl+i ctrl+m",  // or any other key binding
+    "when": "editorTextFocus",
+    "command": "moveby.calculation",
+    "args": {
+      "charNrEx": "currentLine.length / 2"
+    }
+  }
+```
+
 ## `moveby` and Multi Cursor
 
-`moveby.regex` supports multi cursor. For each cursor the search is performed and the cursor is moved to the new location.
+`moveby.regex` and `moveby.calculation` support multi cursor. For each cursor the search is performed and the cursor is moved to the new location.
 
 If the Regular Expression is not found for a particular selection/cursor the behavior depends on the number of cursors that have found a new location:
 
@@ -409,6 +446,8 @@ If more than one cursor end at the same location they will be collapsed into one
 ## Reveal the new cursor locations
 
 With the setting `"moveby.revealType"` you can change the behavior of how the cursor should be revealed after the move. In the Settings UI, group **Extensions** | **Select By**, it is a dropdown box with possible values. These strings are identical to the VSC API enum [TextEditorRevealType](https://code.visualstudio.com/api/references/vscode-api#TextEditorRevealType). If there are multiple cursors the first cursor is used.
+
+## Move By and `keybindings.json`
 
 You can create a key binding with the UI of VSC but you have to add the `"args"` property by modifying `keybindings.json`. If you do not define the `"args"` property it behaves as called from the Command Palette.
 
