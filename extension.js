@@ -388,6 +388,17 @@ function activate(context) {
       vscode.window.showInformationMessage(ex.message);
     }
   }) );
+  let removeCursor = (editor, args, filterFunc) => {
+    if (editor.selections.length == 1) { return; }
+    let locations = editor.selections.sort((a, b) => { return a.start.compareTo(b.start); }).filter(filterFunc);
+    updateEditorSelections(editor, locations);
+  };
+  context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.removeCursorBelow', (editor, edit, args) => {
+    removeCursor(editor, args, (sel, index, arr) => index < arr.length-1 );
+  }) );
+  context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.removeCursorAbove', (editor, edit, args) => {
+    removeCursor(editor, args, (sel, index, arr) => index > 0 );
+  }) );
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('moveby.regex', (editor, edit, args) => { movebyRegEx(editor, args);}) );
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('moveby.calculation', (editor, edit, args) => { movebyCalculation(editor, args);}) );
 };

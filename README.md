@@ -1,8 +1,9 @@
-The extension has commands for 3 things:
+The extension has commands for 5 things:
 
 * [Select By](#select-by): modify the selection based on Regular Expressions
 * [Select By Paste Clipboard](#select-by-paste-clipboard): Replace selection with clipboard content
 * [Select By Line Number](#select-by-line-number): Place cursor based on line number, uses boolean expression
+* [Select By Remove Cursor](#select-by-remove-cursor): Remove one of the multi cursors
 * [Move By](#move-by): move the cursor based on Regular Expressions or a Calculation
 
 # Select By
@@ -320,6 +321,30 @@ n>=c && (n-c)%6<3
 ```
 
 This can also be achieved with `c+6k` followed by **Selection** | **Add Cursor Below** 2 times
+
+# Select By Remove Cursor
+
+If you have a Multi Cursor you can't remove a cursor with **Cursor Undo** (`cursorUndo`) when you have done some edit action.
+
+The following commands remove a cursor/selection:
+
+* `selectby.removeCursorBelow` : remove the last cursor/selection
+* `selectby.removeCursorAbove` : remove the first cursor/selection
+
+A suggestion for keybinding:
+
+```json
+  {
+    "key": "ctrl+alt+/",
+    "command": "selectby.removeCursorAbove",
+    "when": "editorTextFocus"
+  },
+  {
+    "key": "ctrl+alt+'",
+    "command": "selectby.removeCursorBelow",
+    "when": "editorTextFocus"
+  }
+```
 
 # Move By
 
