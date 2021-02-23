@@ -4,6 +4,7 @@ function activate(context) {
 
   var getProperty = (obj, prop, deflt) => { return obj.hasOwnProperty(prop) ? obj[prop] : deflt; };
   var isString = obj => typeof obj === 'string';
+  var isPosInteger = value => /^\d+$/.test(value);
   var getConfigRegExes = () => vscode.workspace.getConfiguration('selectby', null).get('regexes');
   var getConfigRegEx = regexKey => {
     let regexes = getConfigRegExes();
@@ -17,6 +18,7 @@ function activate(context) {
     }
     return search;
   };
+  function range(size, startAt = 0) { return [...Array(size).keys()].map(i => i + startAt); }  // https://stackoverflow.com/a/10050831/9938317
   function expressionFunc(expr, args) {
     try {
       return Function(`"use strict";return (function calcexpr(${args}) {
@@ -230,6 +232,14 @@ function activate(context) {
       return item;
     });
   };
+  var moveBy_repeat_Ask = async () => {
+    return vscode.window.showInputBox({ignoreFocusOut:true, prompt: "Repeat count for move to",
+          value: "1", validateInput: value => isPosInteger(value) ? undefined : 'Only positive integers' })
+    .then( item => {
+      if (isString(item) && item.length === 0) { item = undefined; } // accepted an empty inputbox
+      return item;
+    });
+  };
   var findRegexLocation = (editor, selectionN, regex, findPrev, findStart, wrapCursor) => {
     var docText = editor.document.getText();
     var wrappedCursor = false;
@@ -300,19 +310,24 @@ function activate(context) {
     var rng = new vscode.Range(editor.selection.start, editor.selection.start);
     editor.revealRange(rng, vscode.TextEditorRevealType[vscode.workspace.getConfiguration('moveby', null).get('revealType')]);
   };
-  var movebyLocations = (editor, newLocation) => {
-    var locations = editor.selections
+  var movebyLocations = (editor, newLocation, repeat) => {
+    if (!repeat) { repeat = 1; }
+    let locations = editor.selections;
+    range(repeat).forEach(i => {
+      locations = locations
           .map(newLocation)
           .filter( loc => loc !== undefined)
           .map( location => {
             location = editor.document.positionAt(location);
             return new vscode.Selection(location, location);
           });
+    });
     updateEditorSelections(editor, locations);
   };
   var movebyRegEx = async (editor, args) => {
     if (args === undefined) { args = {}; } // TODO use QuickSelect to construct an args array
     let regex, flagsObj, properties;
+    let repeat = '1';
     if (Array.isArray(args)) {
       let regexKey = args[0];
       let regexFBM = args[1];
@@ -328,14 +343,20 @@ function activate(context) {
       }
       flagsObj = args;
       properties = getProperty(args, 'properties', []);
+      let repeatProp = getProperty(args, 'repeat');
+      if (repeatProp !== undefined) {
+        repeat = (repeatProp === 'ask') ? await moveBy_repeat_Ask() : repeatProp;
+        repeat = String(repeat);
+      }
     }
     if (!(regex && isString(regex))) { return; } // not found or Escaped Quickpick
+    if (!(isPosInteger(repeat) && (Number(repeat)>0) )) { return; } // not found or Escaped InputBox
     let flags = getProperty(flagsObj, 'flags', '') + 'g';
     regex = new RegExp(regex, flags);
     let findPrev = properties.indexOf('prev') >= 0;
     let findStart = properties.indexOf('start') >= 0;
     let wrapCursor = properties.indexOf('wrap') >= 0;
-    movebyLocations(editor, s => findRegexLocation(editor, s, regex, findPrev, findStart, wrapCursor));
+    movebyLocations(editor, s => findRegexLocation(editor, s, regex, findPrev, findStart, wrapCursor), Number(repeat));
   };
   function calculateLocation(editor, selection, lineNrExFunc, charNrExFunc) {
     let arg = {selection: selection, currentLine: editor.document.lineAt(selection.start.line).text};

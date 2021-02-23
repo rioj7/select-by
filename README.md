@@ -391,6 +391,7 @@ If the `"args"` property of the key binding is an Object it can have the followi
 * `regex`: the regular expression to use, (default: ask for regular expression with InputBox)
 * `ask`: a boolean to signal that the regex should be asked from the user, it is optional because if the `regex` property is missing it will be asked.<br/>Just to remind you later which regex is used.
 * `properties`: an Array of strings with the values corresponding to Array indexes (2,3,4) from the section: [args of keybinding is an Array](#args-of-keybinding-is-an-array)<br/>The order of the properties is not important. (default: `["next", "end", "nowrap"]`)
+* `repeat`: how many times to repeat the `moveby`. An integer or a string of an integer. If value is `"ask"` the user needs to enter a number. Choose the correct `"end"` or `"start"` or it will only happen once (default: `1`)
 
 If you want to move the cursor(s) to the first character inside the next Python string you can use:
 
@@ -416,6 +417,21 @@ If you want to move the cursor(s) to the start of the next regex asked from the 
     "args": {
       "ask": true,
       "properties": ["next", "start"]
+    }
+  }
+```
+
+If you want to move _n_, ask user how often, `<td>` tags forward use:
+
+```
+  {
+    "key": "alt+f6",  // or any other key combo
+    "when": "editorTextFocus",
+    "command": "moveby.regex",
+    "args": {
+      "regex": "<td[^>]*>",
+      "properties": ["next", "end"],
+      "repeat": "ask"
     }
   }
 ```
