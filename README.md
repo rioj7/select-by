@@ -70,9 +70,9 @@ If newline characters are part of the regular expression you can determine if it
 
 It could be handy to have a search for a Regular Expression bound to a keyboard shortcut.
 
-The command `selectby.regex` uses arguments to determine the regex range to use. You specify the arguments in a keybinding. At the moment only one argument is used, the name of the range.
+You create [key bindings in `keybindings.json`](https://code.visualstudio.com/docs/getstarted/keybindings).
 
-You need to create 1 or more [key bindings in `keybindings.json`](https://code.visualstudio.com/docs/getstarted/keybindings).
+If the definition of the search is found in the setting `selectby.regexes` you can specify the name of the search in an array:
 
 ```json
   {
@@ -80,6 +80,23 @@ You need to create 1 or more [key bindings in `keybindings.json`](https://code.v
     "when": "editorTextFocus",
     "command": "selectby.regex",
     "args": ["SectionContent"]
+  }
+```
+
+You can also define the range of the search in the args property by using an object:
+
+```json
+  {
+    "key": "ctrl+shift+alt+f9",
+    "when": "editorTextFocus",
+    "command": "selectby.regex",
+    "args": {
+      "backward": "%% section(\\r?\\n)?",
+      "forward": "%% section",
+      "forwardInclude": false,
+      "backwardInclude": false,
+      "copyToClipboard": true
+    }
   }
 ```
 
@@ -531,6 +548,15 @@ Define 2 key bindings (you can change the assigned keys)
     "args": ["goToEmptyLine", "moveby", "next", "start"]
   }
 ```
+## Release Notes
+
+### v1.3.0 `selectby.regex` in keybinding can have an object as `args` property
+
+### v1.2.0 `moveby.regex` has repeat property with ask possibility
+
+### v1.1.0 `selectby.removeCursor(Above|Below)` reduce number of Multi Cursors
+
+### v1.0.0 `moveby.calculation` move the cursor to lineNr:charPos with a calculation
 
 # TODO
 

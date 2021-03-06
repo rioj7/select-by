@@ -4,6 +4,9 @@ function activate(context) {
 
   var getProperty = (obj, prop, deflt) => { return obj.hasOwnProperty(prop) ? obj[prop] : deflt; };
   var isString = obj => typeof obj === 'string';
+  const isArray = obj => Array.isArray(obj);
+  const isObject = obj => (typeof obj === 'object') && !isArray(obj);
+
   var isPosInteger = value => /^\d+$/.test(value);
   var getConfigRegExes = () => vscode.workspace.getConfiguration('selectby', null).get('regexes');
   var getConfigRegEx = regexKey => {
@@ -35,10 +38,13 @@ function activate(context) {
   }
   var recentlyUsedSelectBy = [];
   var recentlyUsedMoveBy = [];
-  var processRegEx = (regexKey, editor) => {
+  var processRegExKey = (regexKey, editor) => {
     if (!isString(regexKey)) { regexKey = 'regex' + regexKey.toString(10); }
     let search = getConfigRegEx(regexKey);
-    if (search === undefined) { return; }
+    processRegExSearch(search, editor);
+  };
+  var processRegExSearch = (search, editor) => {
+    if (!search) { return; }
     var docText = editor.document.getText();
     // position of cursor is "start" of selection
     var offsetCursor = editor.document.offsetAt(editor.selection.start);
@@ -164,6 +170,10 @@ function activate(context) {
   };
 
   var selectbyRegEx = async (editor, args) => {
+    if (isObject(args)) {
+      processRegExSearch(args, editor);
+      return;
+    }
     let regexKey = await new Promise(resolve => {
       if (args !== undefined) {
         resolve(args[0]);
@@ -207,7 +217,7 @@ function activate(context) {
       return item ? item.regexKey : undefined;
     });
     if (regexKey === undefined) { return; }
-    processRegEx(regexKey, editor);
+    processRegExKey(regexKey, editor);
   };
   let lastLineNrExInput = 'c+6k';
   var selectBy_lineNrEx_Ask = async (args) => {
@@ -373,11 +383,11 @@ function activate(context) {
     movebyLocations(editor, s => calculateLocation(editor, s, lineNrExFunc, charNrExFunc));
   };
 
-  context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.regex1', (editor, edit, args) => { processRegEx(1, editor);}) );
-  context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.regex2', (editor, edit, args) => { processRegEx(2, editor);}) );
-  context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.regex3', (editor, edit, args) => { processRegEx(3, editor);}) );
-  context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.regex4', (editor, edit, args) => { processRegEx(4, editor);}) );
-  context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.regex5', (editor, edit, args) => { processRegEx(5, editor);}) );
+  context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.regex1', (editor, edit, args) => { processRegExKey(1, editor);}) );
+  context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.regex2', (editor, edit, args) => { processRegExKey(2, editor);}) );
+  context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.regex3', (editor, edit, args) => { processRegExKey(3, editor);}) );
+  context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.regex4', (editor, edit, args) => { processRegExKey(4, editor);}) );
+  context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.regex5', (editor, edit, args) => { processRegExKey(5, editor);}) );
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.regex', (editor, edit, args) => { selectbyRegEx(editor, args);}) );
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.pasteClipboard', async (editor, edit, args) => {
     if (editor.selections.length > 1) {
