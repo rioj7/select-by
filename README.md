@@ -474,6 +474,7 @@ The expressions can use a number of variables:
 * `selection.start.character`
 * `selection.end.line`
 * `selection.end.character`
+* `selections` : the full array of all current selections/cursors. You can use the `start` and `end` property of a partucular selection. To get the last selection use `selections[selections.length-1]`
 * `currentLine` : a string with the text of the line where the selection starts
 * `currentLine.length` : the length of `currentLine` variable
 

@@ -369,10 +369,10 @@ function activate(context) {
     movebyLocations(editor, s => findRegexLocation(editor, s, regex, findPrev, findStart, wrapCursor), Number(repeat));
   };
   function calculateLocation(editor, selection, lineNrExFunc, charNrExFunc) {
-    let arg = {selection: selection, currentLine: editor.document.lineAt(selection.start.line).text};
+    let arg = {selection: selection, currentLine: editor.document.lineAt(selection.start.line).text, selections: editor.selections};
     return editor.document.offsetAt(new vscode.Position(Math.floor(lineNrExFunc(arg)), Math.floor(charNrExFunc(arg))));
   }
-  const transformCalculationEx = str => str.replace(/selection|currentLine/g, 'arg.$&');
+  const transformCalculationEx = str => str.replace(/selections?|currentLine/g, 'arg.$&');
   var movebyCalculation = async (editor, args) => {
     if (args === undefined) { args = {}; }
     let lineNrEx = getProperty(args, 'lineNrEx', 'selection.start.line');
