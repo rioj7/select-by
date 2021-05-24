@@ -1,9 +1,10 @@
-The extension has commands for 5 things:
+The extension has commands for 6 things:
 
 * [Select By](#select-by): modify the selection based on Regular Expressions
 * [Select By Paste Clipboard](#select-by-paste-clipboard): Replace selection with clipboard content
 * [Select By Line Number](#select-by-line-number): Place cursor based on line number, uses boolean expression
 * [Select By Remove Cursor](#select-by-remove-cursor): Remove one of the multi cursors
+* `selectby.swapActive` : Swap anchor and active (cursor) positions of selection(s)
 * [Move By](#move-by): move the cursor based on Regular Expressions or a Calculation
 
 # Select By
@@ -550,6 +551,8 @@ Define 2 key bindings (you can change the assigned keys)
   }
 ```
 ## Release Notes
+
+### v1.4.0 `selectby.swapActive` swap cursor position within selection(s)
 
 ### v1.3.0 `selectby.regex` in keybinding can have an object as `args` property
 

@@ -382,7 +382,9 @@ function activate(context) {
     let charNrExFunc = expressionFunc(transformCalculationEx(charNrEx), 'arg');
     movebyLocations(editor, s => calculateLocation(editor, s, lineNrExFunc, charNrExFunc));
   };
-
+  context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.swapActive', editor => {
+    editor.selections = editor.selections.map( s => new vscode.Selection(s.active, s.anchor));
+  }) );
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.regex1', (editor, edit, args) => { processRegExKey(1, editor);}) );
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.regex2', (editor, edit, args) => { processRegExKey(2, editor);}) );
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.regex3', (editor, edit, args) => { processRegExKey(3, editor);}) );
