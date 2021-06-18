@@ -410,6 +410,7 @@ If the `"args"` property of the key binding is an Object it can have the followi
 * `ask`: a boolean to signal that the regex should be asked from the user, it is optional because if the `regex` property is missing it will be asked.<br/>Just to remind you later which regex is used.
 * `properties`: an Array of strings with the values corresponding to Array indexes (2,3,4) from the section: [args of keybinding is an Array](#args-of-keybinding-is-an-array)<br/>The order of the properties is not important. (default: `["next", "end", "nowrap"]`)
 * `repeat`: how many times to repeat the `moveby`. An integer or a string of an integer. If value is `"ask"` the user needs to enter a number. Choose the correct `"end"` or `"start"` or it will only happen once (default: `1`)
+* `checkCurrent`: check if current cursor position is a possible match (default: `false`)
 
 If you want to move the cursor(s) to the first character inside the next Python string you can use:
 
@@ -450,6 +451,24 @@ If you want to move _n_, ask user how often, `<td>` tags forward use:
       "regex": "<td[^>]*>",
       "properties": ["next", "end"],
       "repeat": "ask"
+    }
+  }
+```
+
+if you want to insert a snippet at the end of an HTML open tag
+
+```
+  {
+    "key": "alt+f7", // or any other key combo
+    "when": "editorTextFocus",
+    "command": "extension.multiCommand.execute",
+    "args": {
+      "sequence": [
+        { "command": "moveby.regex",
+          "args": { "regex": ">", "properties": ["next", "start"]}, "checkCurrent": true },
+        { "command": "editor.action.insertSnippet",
+          "args": { "snippet": " class=\"$1\"$0" } }
+      ]
     }
   }
 ```
@@ -551,6 +570,8 @@ Define 2 key bindings (you can change the assigned keys)
   }
 ```
 ## Release Notes
+
+### v1.5.0 `moveby.regex` add `checkCurrent` option
 
 ### v1.4.0 `selectby.swapActive` swap cursor position within selection(s)
 

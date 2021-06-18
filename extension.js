@@ -250,12 +250,21 @@ function activate(context) {
       return item;
     });
   };
-  var findRegexLocation = (editor, selectionN, regex, findPrev, findStart, wrapCursor) => {
+  var findRegexLocation = (editor, selectionN, regex, findPrev, findStart, wrapCursor, checkCurrent) => {
     var docText = editor.document.getText();
     var wrappedCursor = false;
     var offsetCursor = editor.document.offsetAt(findPrev ? selectionN.start : selectionN.end);
     var location = offsetCursor;
     if (regex) {
+      if (checkCurrent) {
+        regex.lastIndex = 0;
+        let result;
+        while ((result = regex.exec(docText))!==null) {
+          location = findStart ? result.index : regex.lastIndex;
+          if (location > offsetCursor) { break; }
+          if (location === offsetCursor) { return location; }
+        }
+      }
       regex.lastIndex = findPrev ? 0 : offsetCursor;
       while (true) {
         let prevLastIndex = regex.lastIndex;
@@ -337,6 +346,7 @@ function activate(context) {
   var movebyRegEx = async (editor, args) => {
     if (args === undefined) { args = {}; } // TODO use QuickSelect to construct an args array
     let regex, flagsObj, properties;
+    let checkCurrent = false;
     let repeat = '1';
     if (Array.isArray(args)) {
       let regexKey = args[0];
@@ -353,6 +363,7 @@ function activate(context) {
       }
       flagsObj = args;
       properties = getProperty(args, 'properties', []);
+      checkCurrent = getProperty(args, 'checkCurrent', false);
       let repeatProp = getProperty(args, 'repeat');
       if (repeatProp !== undefined) {
         repeat = (repeatProp === 'ask') ? await moveBy_repeat_Ask() : repeatProp;
@@ -366,7 +377,7 @@ function activate(context) {
     let findPrev = properties.indexOf('prev') >= 0;
     let findStart = properties.indexOf('start') >= 0;
     let wrapCursor = properties.indexOf('wrap') >= 0;
-    movebyLocations(editor, s => findRegexLocation(editor, s, regex, findPrev, findStart, wrapCursor), Number(repeat));
+    movebyLocations(editor, s => findRegexLocation(editor, s, regex, findPrev, findStart, wrapCursor, checkCurrent), Number(repeat));
   };
   function calculateLocation(editor, selection, lineNrExFunc, charNrExFunc) {
     let arg = {selection: selection, currentLine: editor.document.lineAt(selection.start.line).text, selections: editor.selections};
