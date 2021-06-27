@@ -571,6 +571,8 @@ Define 2 key bindings (you can change the assigned keys)
 ```
 ## Release Notes
 
+### v1.5.1 `moveby.regex` fix a few cases
+
 ### v1.5.0 `moveby.regex` add `checkCurrent` option
 
 ### v1.4.0 `selectby.swapActive` swap cursor position within selection(s)

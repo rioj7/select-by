@@ -273,6 +273,7 @@ function activate(context) {
           if (wrapCursor) {
             wrapCursor = undefined; // only wrap once
             if (findPrev) {
+              if (location !== offsetCursor) { break; } // found one before offsetCursor
               return undefined; // leave cursor at current location, not found anywhere in the file
             } else {
               regex.lastIndex = 0;
@@ -288,6 +289,7 @@ function activate(context) {
               continue;
             }
           }
+          if (location !== offsetCursor) { break; } // found one before offsetCursor
           return undefined; // not found, skip cursor or leave at current location
         }
         var resultLocation = findStart ? result.index : regex.lastIndex;

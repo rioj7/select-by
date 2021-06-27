@@ -4,7 +4,7 @@
   "description": "Select text range based on certain criteria (regex,...) and move cursor by regex",
   "publisher": "rioj7",
   "license": "MIT",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "engines": {"vscode": "^1.37.0"},
   "categories": ["Other"],
   "keywords": ["select","text","range", "move", "cursor"],
@@ -185,5 +185,12 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/rioj7/select-by.git"
+  },
+  "devDependencies": {
+    "@types/assert": "^1.5.4",
+    "@types/mocha": "^8.2.1",
+    "glob": "^7.1.6",
+    "mocha": "^8.3.0",
+    "simple-mock": "^0.8.0"
   }
 }
