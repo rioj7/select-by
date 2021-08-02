@@ -54,20 +54,30 @@ function activate(context) {
     regex = getProperty(search, "backward");
     if (regex && isString(regex)) {
       let incMatch = getProperty(search, "backwardInclude", true);
+      let backwardAllowCurrent = getProperty(search, "backwardAllowCurrentPosition", true);
       regex = new RegExp(regex, flags);
       selectStart = 0;
       regex.lastIndex = 0;
-      let result;
-      while ((result=regex.exec(docText)) != null) {
-        if (result.index >= offsetCursor) break;
-        selectStart = incMatch ? result.index : regex.lastIndex;
+      while (true) {
+        let prevLastIndex = regex.lastIndex;
+        let result = regex.exec(docText);
+        if (result == null) { break; }
+        if (result.index >= offsetCursor) { break; }
+        let newSelectStart = incMatch ? result.index : regex.lastIndex;
+        if (prevLastIndex === regex.lastIndex) { // empty match
+          regex.lastIndex = prevLastIndex + 1;
+        }
+        if (!backwardAllowCurrent && newSelectStart === offsetCursor) { continue; }
+        selectStart = newSelectStart;
       }
     }
-    var selectEnd = editor.document.offsetAt(editor.selection.end);
+    let currentSelectionEnd = editor.document.offsetAt(editor.selection.end);
+    let selectEnd = currentSelectionEnd;
     regex = getProperty(search, "forward");
     var regexForwardNext = getProperty(search, "forwardNext");
     let forwardNextInclude = getProperty(search, "forwardNextInclude", true);
     let forwardNextExtendSelection = getProperty(search, "forwardNextExtendSelection", false);
+    let forwardAllowCurrent = getProperty(search, "forwardAllowCurrentPosition", true);
     let searchForwardNext = (forwardResult, startForwardNext) => {
       if (!(regexForwardNext && isString(regexForwardNext))) return [undefined, undefined];
       let regexForwardNextModified = regexForwardNext.replace(/{{(\d+)}}/g, (match, p1) => {
@@ -137,6 +147,7 @@ function activate(context) {
           selectEnd = incMatch ? regex.lastIndex : result.index;
           startForwardNext = regex.lastIndex;
           forwardResult = result.slice();
+          if (!forwardAllowCurrent && selectEnd === currentSelectionEnd) { continue; }
           break;
         }
       }

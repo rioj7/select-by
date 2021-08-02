@@ -35,6 +35,8 @@ The ranges are specified in the `settings.json` file for entry `selectby.regexes
     * `forwardNext`: the regular expression to search for starting at the end of the **forward** search to the end of the file. Or `false` (to override User setting). [See explanation](#select-by-with-forwardnext).
     * `backwardInclude`: should the matched **backward** search text be part of the selection (default: `true`)
     * `forwardInclude`: should the matched **forward** search text be part of the selection (default: `true`)
+    * `backwardAllowCurrentPosition`: is the current selection start an allowed backward position (default: `true`)
+    * `forwardAllowCurrentPosition`: is the current selection end an allowed forward position (default: `true`)
     * `forwardNextInclude`: should the matched **forwardNext** search text be part of the selection (default: `true`)
     * `forwardNextExtendSelection`: should we extend the selection with the matched **forwardNext** search text if the begin of the selection matches the **forward** regex (default: `false`). [See explanation](#select-by-with-forwardnextextendselection).
     * `surround` : select the text around the current selection that matches the regular expression, the selection is somewhere in the text to select, or false (to override User setting). [See explanation](#select-by-with-surround).
@@ -102,6 +104,10 @@ You can also define the range of the search in the args property by using an obj
 ```
 
 If you create a keybinding without an `args` property a QuickPick list, with recently used items, will be shown where you can select a range to use.
+
+## Select By with backward/forwardAllowCurrentPosition
+
+If the current selection start or end is a valid position for the given search regex the selection will not be extended if you have the `backward/forwardInclude` set to `false`. You can change this behavior by setting the property `backwardAllowCurrentPosition` or `forwardAllowCurrentPosition` to `false`. Now the search will be at the next possible position before or after, and the selection is extended.
 
 ## Select By with forwardNext
 
@@ -171,7 +177,7 @@ Put this in your `settings.json` file:
 
 And define a keybinding.
 
-If it is not important that the selection starts at the first tuple item and the items are all word charcters you can use:
+If it is not important that the selection starts at the first tuple item and the items are all word characters you can use:
 
 ```json
     "selectby.regexes": {
