@@ -416,12 +416,19 @@ function activate(context) {
     markPositions = [];
   }
   resetMarks();
+  let markDecoration;
+  (function createMarkDecoration() {
+    let options = { before: { contentText: '◆', color: new vscode.ThemeColor('editor.selectionBackground') } };
+    markDecoration = vscode.window.createTextEditorDecorationType(options);
+  })();
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.mark', editor => {
     if (!editor) { return; }
     if (markFirst) {
       markPositions = editor.selections.map( s => s.start );
       markFirst = false;
+      editor.setDecorations(markDecoration, markPositions.map( m => new vscode.Range(m, m) ) );
     } else {
+      editor.setDecorations(markDecoration, []);
       if (editor.selections.length !== markPositions.length ) {
         vscode.window.showWarningMessage(`Different number of cursors: ${editor.selections.length} != ${markPositions.length}`);
       } else {

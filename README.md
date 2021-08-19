@@ -5,7 +5,7 @@ The extension has commands for 6 things:
 * [Select By Line Number](#select-by-line-number): Place cursor based on line number, uses boolean expression
 * [Select By Remove Cursor](#select-by-remove-cursor): Remove one of the multi cursors
 * `selectby.swapActive` : Swap anchor and active (cursor) positions of selection(s)
-* `selectby.mark` : Mark position of cursor(s), create selection(s) on next mark
+* [Select By Mark](#select-by-mark): Mark position of cursor(s), create selection(s) on next mark
 * [Move By](#move-by): move the cursor based on Regular Expressions or a Calculation
 
 # Select By
@@ -370,6 +370,24 @@ A suggestion for keybinding:
     "when": "editorTextFocus"
   }
 ```
+
+# Select By Mark
+
+The command is `selectby.mark`.
+
+The first time you call the command it remembers the start positions of the current selections.
+
+The second call of the command creates selections from the marked (stored) positions to the active positions of the current selections. If the number of cursors differ it shows a warning.
+
+You can create a key binding for this command or call it from the Command Palette.
+
+Currently they are not bound to the particular editor/file so you can use cursor positions from one file (first mark) in another file (second mark)
+
+You can use a second mark to view the selections up to now. Follow it by an immediate first mark to remember the selection starts if you want to continue to modify the cursor positions.
+
+You can combine it with the `moveby.regex` command of this extension to move the cursors by a search for a regular expression.
+
+The marked positions are decorated with a ◆ character using the `editor.selectionBackground` color.
 
 # Move By
 
