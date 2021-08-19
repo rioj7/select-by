@@ -5,6 +5,7 @@ The extension has commands for 6 things:
 * [Select By Line Number](#select-by-line-number): Place cursor based on line number, uses boolean expression
 * [Select By Remove Cursor](#select-by-remove-cursor): Remove one of the multi cursors
 * `selectby.swapActive` : Swap anchor and active (cursor) positions of selection(s)
+* `selectby.mark` : Mark position of cursor(s), create selection(s) on next mark
 * [Move By](#move-by): move the cursor based on Regular Expressions or a Calculation
 
 # Select By
@@ -500,7 +501,7 @@ The expressions can use a number of variables:
 * `selection.start.character`
 * `selection.end.line`
 * `selection.end.character`
-* `selections` : the full array of all current selections/cursors. You can use the `start` and `end` property of a partucular selection. To get the last selection use `selections[selections.length-1]`
+* `selections` : the full array of all current selections/cursors. You can use the `start` and `end` property of a particular selection. To get the last selection use `selections[selections.length-1]`
 * `currentLine` : a string with the text of the line where the selection starts
 * `currentLine.length` : the length of `currentLine` variable
 
@@ -576,6 +577,10 @@ Define 2 key bindings (you can change the assigned keys)
   }
 ```
 ## Release Notes
+
+### v1.7.0 `selectby.mark` : Mark position of cursor(s), create selection(s) on next mark
+
+### v1.6.0 `forward/backwardAllowCurrentPosition`
 
 ### v1.5.1 `moveby.regex` fix a few cases
 

@@ -409,6 +409,27 @@ function activate(context) {
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.swapActive', editor => {
     editor.selections = editor.selections.map( s => new vscode.Selection(s.active, s.anchor));
   }) );
+  let markFirst;
+  let markPositions;
+  function resetMarks() {
+    markFirst = true;
+    markPositions = [];
+  }
+  resetMarks();
+  context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.mark', editor => {
+    if (!editor) { return; }
+    if (markFirst) {
+      markPositions = editor.selections.map( s => s.start );
+      markFirst = false;
+    } else {
+      if (editor.selections.length !== markPositions.length ) {
+        vscode.window.showWarningMessage(`Different number of cursors: ${editor.selections.length} != ${markPositions.length}`);
+      } else {
+        editor.selections = editor.selections.map( (s, i) => new vscode.Selection(markPositions[i], s.active) );
+      }
+      resetMarks();
+    }
+  }) );
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.regex1', (editor, edit, args) => { processRegExKey(1, editor);}) );
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.regex2', (editor, edit, args) => { processRegExKey(2, editor);}) );
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.regex3', (editor, edit, args) => { processRegExKey(3, editor);}) );
