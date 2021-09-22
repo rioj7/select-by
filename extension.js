@@ -235,7 +235,7 @@ function activate(context) {
     if (args === undefined) { args = {}; }
     let lineNrEx = getProperty(args, 'lineNrEx');
     if (lineNrEx) { return lineNrEx; }
-    return vscode.window.showInputBox({"ignoreFocusOut":true, "prompt": "lineNrEx to place cursors", "value": lastLineNrExInput})
+    return vscode.window.showInputBox({"ignoreFocusOut":true, "prompt": "lineNr Expression to place cursors; c+6k ; inselection", "value": lastLineNrExInput})
     .then( item => {
       if (isString(item) && item.length === 0) { item = undefined; } // accepted an empty inputbox
       if (item) {lastLineNrExInput = item; }
@@ -454,16 +454,40 @@ function activate(context) {
     }
   }) );
   let transform_line_modulo = (match, number) => `((n-c)%${number}==0 && n>=c)`;
+  function transform_inselection(startLineNr, endLineNr) {
+    return match => `((n>=${startLineNr}) && (n<=${endLineNr}))`;
+  }
+  class LineNrTest {
+    /** @param {number} startLineNr @param {string} lineNrEx */
+    constructor(startLineNr, lineNrEx) {
+      this.startLineNr = startLineNr;
+      this.func = expressionFunc(lineNrEx, 'c,n');
+    }
+    test(n) { return this.func(this.startLineNr+1, n+1); } // zero based line numbers
+  }
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.lineNr', async (editor, edit, args) => {
     let lineNrEx = await selectBy_lineNrEx_Ask(args);
     if (!isString(lineNrEx) || lineNrEx.length == 0) { return; }
     try {
-      let lineNrExFunc = expressionFunc(lineNrEx.replace(/c\s*\+\s*(\d+)\s*k/g, transform_line_modulo), 'c,n');
-      let currentLineNr = editor.selection.start.line;
+      lineNrEx = lineNrEx.replace(/c\s*\+\s*(\d+)\s*k/g, transform_line_modulo);
+      /** @type {LineNrTest[]} */
+      let lineNrTests = [];
+      if (lineNrEx.indexOf('inselection') >= 0) {
+        for (const selection of editor.selections) {
+          let selectionStartLineNr = selection.start.line;
+          let selectionEndLineNr = selection.end.line;
+          if (selection.end.character === 0) {
+            selectionEndLineNr--; // cursor at start of line does not select any on that line
+          }
+          lineNrTests.push( new LineNrTest(selectionStartLineNr, lineNrEx.replace(/inselection/g, transform_inselection(selectionStartLineNr+1, selectionEndLineNr+1))) );
+        }
+      } else {
+        lineNrTests.push( new LineNrTest(editor.selection.start.line, lineNrEx) );
+      }
       let lineCount = editor.document.lineCount;
       let locations = [];
       for (let n = 0; n < lineCount; ++n) {
-        if (lineNrExFunc(currentLineNr+1, n+1)) { // zero based line numbers
+        if (lineNrTests.some( lineNrTest => lineNrTest.test(n) )) {
           let position = new vscode.Position(n, 0);
           if (locations.push(new vscode.Selection(position, position)) >= 10000) { break; }
         }

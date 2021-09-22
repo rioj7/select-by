@@ -312,7 +312,7 @@ If you want to place a cursor on each line where the line number matches multipl
 
 The boolean expression uses the following variables:
 
-* `c` : contains the line number of the cursor or the start of the first selection.
+* `c` : contains the line number of the cursor or the start of the first selection. When using [`inselection`](#inselection) it means the start of the selection.
 * `n` : contains the line number of the line under test, each line of the current document is tested
 * `k` : is a placeholder to signify a modulo placement. Can only be used in an expression like `c + 6 k`. Meaning every line that is a multiple (k ∈ ℕ) of 6 from the current line. Every expression of the form `c + 6 k` is transformed to <code>((n-c)%<em>number</em>==0 && n>=c)</code>.
 
@@ -346,6 +346,21 @@ n>=c && (n-c)%6<3
 ```
 
 This can also be achieved with `c+6k` followed by **Selection** | **Add Cursor Below** 2 times
+
+## `inselection`
+
+If you want every selection to be treated separately or you want the command to figure out the end line test (`&& n<=100`) you can add `&& inselection`. The text `inselection` is transformed to <code>((n>=<em>startLineNr</em>) && (n<=<em>endLineNr</em>))</code>. Where <em>startLineNr</em> and <em>endLineNr</em> are from each selection. If the end of a selection is at the start of a line that line is not considered to be part of the selection.
+
+This is also usefull to add to a keybinding, now the end line test depends on the selected text.
+
+```json
+  {
+    "key": "ctrl+k ctrl+k",
+    "when": "editorTextFocus",
+    "command": "selectby.lineNr",
+    "args": { "lineNrEx": "c+5k && inselection" }
+  }
+```
 
 # Select By Remove Cursor
 
@@ -594,7 +609,10 @@ Define 2 key bindings (you can change the assigned keys)
     "args": ["goToEmptyLine", "moveby", "next", "start"]
   }
 ```
+
 ## Release Notes
+
+### v1.8.0 `selectby.linenr` : `inselection` only places cursors in the selections
 
 ### v1.7.0 `selectby.mark` : Mark position of cursor(s), create selection(s) on next mark
 
