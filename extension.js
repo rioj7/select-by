@@ -421,8 +421,10 @@ function activate(context) {
     let options = { before: { contentText: '◆', color: new vscode.ThemeColor('editor.selectionBackground') } };
     markDecoration = vscode.window.createTextEditorDecorationType(options);
   })();
-  context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.mark', editor => {
+  context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.mark', (editor, edit, args) => {
     if (!editor) { return; }
+    if (args === undefined) { args = {}; }
+    if (getProperty(args, 'first')) { resetMarks(); }
     if (markFirst) {
       markPositions = editor.selections.map( s => s.start );
       markFirst = false;

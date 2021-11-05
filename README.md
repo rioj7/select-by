@@ -1,4 +1,4 @@
-The extension has commands for 6 things:
+The extension has commands for 7 things:
 
 * [Select By](#select-by): modify the selection based on Regular Expressions
 * [Select By Paste Clipboard](#select-by-paste-clipboard): Replace selection with clipboard content
@@ -349,6 +349,8 @@ This can also be achieved with `c+6k` followed by **Selection** | **Add Cursor B
 
 ## `inselection`
 
+Feature request by [blueray](https://stackoverflow.com/questions/69263442/how-to-put-cursor-on-every-other-line-on-alternate-lines)
+
 If you want every selection to be treated separately or you want the command to figure out the end line test (`&& n<=100`) you can add `&& inselection`. The text `inselection` is transformed to <code>((n>=<em>startLineNr</em>) && (n<=<em>endLineNr</em>))</code>. Where <em>startLineNr</em> and <em>endLineNr</em> are from each selection. If the end of a selection is at the start of a line that line is not considered to be part of the selection.
 
 This is also usefull to add to a keybinding, now the end line test depends on the selected text.
@@ -389,6 +391,10 @@ A suggestion for keybinding:
 # Select By Mark
 
 The command is `selectby.mark`.
+
+The `"args"` argument of the command can have the following properties:
+
+* `first`: boolean, when `true` this command will behave as if it is the first call (remembers the start positions), usefull on command scripts like multi-command
 
 The first time you call the command it remembers the start positions of the current selections.
 
@@ -611,6 +617,10 @@ Define 2 key bindings (you can change the assigned keys)
 ```
 
 ## Release Notes
+
+### v1.9.0
+* `selectby.mark` : argument `first` to reset call number
+* web extension
 
 ### v1.8.0 `selectby.linenr` : `inselection` only places cursors in the selections
 
