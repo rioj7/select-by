@@ -342,6 +342,11 @@ function activate(context) {
     var rng = new vscode.Range(editor.selection.start, editor.selection.start);
     editor.revealRange(rng, vscode.TextEditorRevealType[vscode.workspace.getConfiguration('moveby', null).get('revealType')]);
   };
+  /** @param {readonly vscode.Selection[]} selections */
+  var sortSelections = selections => {
+    let newSelections = [...selections];
+    return newSelections.sort((a, b) => { return a.start.compareTo(b.start); })
+  };
   var movebyLocations = (editor, newLocation, repeat) => {
     if (!repeat) { repeat = 1; }
     let locations = editor.selections;
@@ -410,9 +415,9 @@ function activate(context) {
     editor.selections = editor.selections.map( s => new vscode.Selection(s.active, s.anchor));
   }) );
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.anchorAndActiveSeparate', editor => {
-    editor.selections = editor.selections.map( s => {
+    editor.selections = sortSelections(editor.selections).map( s => {
       if (s.isEmpty) { return s; }
-      return [new vscode.Selection(s.active, s.active), new vscode.Selection(s.anchor, s.anchor)];
+      return [new vscode.Selection(s.start, s.start), new vscode.Selection(s.end, s.end)];
     }).flat();
   }) );
   let markFirst;
