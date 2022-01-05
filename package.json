@@ -4,7 +4,7 @@
   "description": "Select text range based on certain criteria (regex,...) and move cursor by regex",
   "publisher": "rioj7",
   "license": "MIT",
-  "version": "1.9.0",
+  "version": "1.10.0",
   "engines": {"vscode": "^1.55.0"},
   "categories": ["Other"],
   "keywords": ["select","text","range", "move", "cursor"],
@@ -22,6 +22,7 @@
     "onCommand:selectby.removeCursorBelow",
     "onCommand:selectby.removeCursorAbove",
     "onCommand:selectby.swapActive",
+    "onCommand:selectby.anchorAndActiveSeparate",
     "onCommand:selectby.mark",
     "onCommand:moveby.regex",
     "onCommand:moveby.calculation"
@@ -30,59 +31,78 @@
     "commands": [
       {
         "command": "selectby.regex1",
-        "title": "Select text range based on regex 1"
+        "title": "Select text range based on regex 1",
+        "category": "SelectBy"
       },
       {
         "command": "selectby.regex2",
-        "title": "Select text range based on regex 2"
+        "title": "Select text range based on regex 2",
+        "category": "SelectBy"
       },
       {
         "command": "selectby.regex3",
-        "title": "Select text range based on regex 3"
+        "title": "Select text range based on regex 3",
+        "category": "SelectBy"
       },
       {
         "command": "selectby.regex4",
-        "title": "Select text range based on regex 4"
+        "title": "Select text range based on regex 4",
+        "category": "SelectBy"
       },
       {
         "command": "selectby.regex5",
-        "title": "Select text range based on regex 5"
+        "title": "Select text range based on regex 5",
+        "category": "SelectBy"
       },
       {
         "command": "selectby.regex",
-        "title": "Select text range based on regex"
+        "title": "Select text range based on regex",
+        "category": "SelectBy"
       },
       {
         "command": "selectby.pasteClipboard",
-        "title": "Paste clipboard and select"
+        "title": "Paste clipboard and select",
+        "category": "SelectBy"
       },
       {
         "command": "selectby.lineNr",
-        "title": "Place cursor based on line number, uses boolean expression"
+        "title": "Place cursor based on line number, uses boolean expression",
+        "category": "SelectBy"
       },
       {
         "command": "selectby.removeCursorBelow",
-        "title": "Remove Cursor from Below"
+        "title": "Remove Cursor from Below",
+        "category": "SelectBy"
       },
       {
         "command": "selectby.removeCursorAbove",
-        "title": "Remove Cursor from Above"
+        "title": "Remove Cursor from Above",
+        "category": "SelectBy"
       },
       {
         "command": "selectby.swapActive",
-        "title": "Swap the achor and active (cursor) position of the selection(s)"
+        "title": "Swap the anchor and active (cursor) position of the selection(s)",
+        "category": "SelectBy"
+      },
+      {
+        "command": "selectby.anchorAndActiveSeparate",
+        "title": "Create separate cursors for anchor and active position of the selection(s)",
+        "category": "SelectBy"
       },
       {
         "command": "selectby.mark",
-        "title": "Mark position of cursor(s), create selection(s) on next mark"
+        "title": "Mark position of cursor(s), create selection(s) on next mark",
+        "category": "SelectBy"
       },
       {
         "command": "moveby.regex",
-        "title": "Move cursor based on regex"
+        "title": "Move cursor based on regex",
+        "category": "MoveBy"
       },
       {
         "command": "moveby.calculation",
-        "title": "Move cursor based on calculation by keybinding"
+        "title": "Move cursor based on calculation by keybinding",
+        "category": "MoveBy"
       }
     ],
     "configuration": {

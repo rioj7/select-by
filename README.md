@@ -1,10 +1,11 @@
-The extension has commands for 7 things:
+The extension has commands for 8 things:
 
 * [Select By](#select-by): modify the selection based on Regular Expressions
 * [Select By Paste Clipboard](#select-by-paste-clipboard): Replace selection with clipboard content
 * [Select By Line Number](#select-by-line-number): Place cursor based on line number, uses boolean expression
 * [Select By Remove Cursor](#select-by-remove-cursor): Remove one of the multi cursors
 * `selectby.swapActive` : Swap anchor and active (cursor) positions of selection(s)
+* `selectby.anchorAndActiveSeparate` : Create separate cursors for anchor and active position of the selection(s)
 * [Select By Mark](#select-by-mark): Mark position of cursor(s), create selection(s) on next mark
 * [Move By](#move-by): move the cursor based on Regular Expressions or a Calculation
 
@@ -617,6 +618,9 @@ Define 2 key bindings (you can change the assigned keys)
 ```
 
 ## Release Notes
+
+### v1.10.0
+* `selectby.anchorAndActiveSeparate`
 
 ### v1.9.0
 * `selectby.mark` : argument `first` to reset call number

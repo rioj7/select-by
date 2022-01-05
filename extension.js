@@ -409,6 +409,12 @@ function activate(context) {
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.swapActive', editor => {
     editor.selections = editor.selections.map( s => new vscode.Selection(s.active, s.anchor));
   }) );
+  context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.anchorAndActiveSeparate', editor => {
+    editor.selections = editor.selections.map( s => {
+      if (s.isEmpty) { return s; }
+      return [new vscode.Selection(s.active, s.active), new vscode.Selection(s.anchor, s.anchor)];
+    }).flat();
+  }) );
   let markFirst;
   let markPositions;
   function resetMarks() {
