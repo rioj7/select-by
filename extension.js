@@ -253,8 +253,8 @@ function activate(context) {
       return item;
     });
   };
-  var moveBy_repeat_Ask = async () => {
-    return vscode.window.showInputBox({ignoreFocusOut:true, prompt: "Repeat count for move to",
+  var positiveInteger_Ask = async (prompt) => {
+    return vscode.window.showInputBox({ignoreFocusOut:true, prompt,
           value: "1", validateInput: value => isPosInteger(value) ? undefined : 'Only positive integers' })
     .then( item => {
       if (isString(item) && item.length === 0) { item = undefined; } // accepted an empty inputbox
@@ -384,7 +384,7 @@ function activate(context) {
       checkCurrent = getProperty(args, 'checkCurrent', false);
       let repeatProp = getProperty(args, 'repeat');
       if (repeatProp !== undefined) {
-        repeat = (repeatProp === 'ask') ? await moveBy_repeat_Ask() : repeatProp;
+        repeat = (repeatProp === 'ask') ? await positiveInteger_Ask('Repeat count for move to') : repeatProp;
         repeat = String(repeat);
       }
     }
@@ -397,19 +397,25 @@ function activate(context) {
     let wrapCursor = properties.indexOf('wrap') >= 0;
     movebyLocations(editor, s => findRegexLocation(editor, s, regex, findPrev, findStart, wrapCursor, checkCurrent), Number(repeat));
   };
-  function calculateLocation(editor, selection, lineNrExFunc, charNrExFunc) {
-    let arg = {selection: selection, currentLine: editor.document.lineAt(selection.start.line).text, selections: editor.selections};
+  function calculateLocation(editor, selection, lineNrExFunc, charNrExFunc, offset) {
+    let arg = {selection: selection, currentLine: editor.document.lineAt(selection.start.line).text, selections: editor.selections, offset: offset};
     return editor.document.offsetAt(new vscode.Position(Math.floor(lineNrExFunc(arg)), Math.floor(charNrExFunc(arg))));
   }
-  const transformCalculationEx = str => str.replace(/selections?|currentLine/g, 'arg.$&');
+  const transformCalculationEx = str => str.replace(/selections?|currentLine|offset/g, 'arg.$&');
   var movebyCalculation = async (editor, args) => {
     if (args === undefined) { args = {}; }
     let lineNrEx = getProperty(args, 'lineNrEx', 'selection.start.line');
     let charNrEx = getProperty(args, 'charNrEx');
     if (!charNrEx) { return; }
+    let offset = {line:0, character:0};
+    if (lineNrEx.indexOf('offset') !== -1) {
+      let offsetInput = await positiveInteger_Ask('Go to offset');
+      if (offsetInput === undefined) { return; }
+      offset = editor.document.positionAt(Number(offsetInput));
+    }
     let lineNrExFunc = expressionFunc(transformCalculationEx(lineNrEx), 'arg');
     let charNrExFunc = expressionFunc(transformCalculationEx(charNrEx), 'arg');
-    movebyLocations(editor, s => calculateLocation(editor, s, lineNrExFunc, charNrExFunc));
+    movebyLocations(editor, s => calculateLocation(editor, s, lineNrExFunc, charNrExFunc, offset));
   };
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.swapActive', editor => {
     editor.selections = editor.selections.map( s => new vscode.Selection(s.active, s.anchor));

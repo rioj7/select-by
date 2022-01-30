@@ -544,6 +544,8 @@ The expressions can use a number of variables:
 * `selections` : the full array of all current selections/cursors. You can use the `start` and `end` property of a particular selection. To get the last selection use `selections[selections.length-1]`
 * `currentLine` : a string with the text of the line where the selection starts
 * `currentLine.length` : the length of `currentLine` variable
+* `offset.line` : Ask the user for an offset (relative to start of file) and calculate line and character position
+* `offset.character`
 
 If you want to move the cursor to the midpoint of the line the cursor is on you can use
 
@@ -554,6 +556,20 @@ If you want to move the cursor to the midpoint of the line the cursor is on you 
     "command": "moveby.calculation",
     "args": {
       "charNrEx": "currentLine.length / 2"
+    }
+  }
+```
+
+If something reports a problem at a character offset (relative to start of file) you can use:
+
+```
+  {
+    "key": "ctrl+i ctrl+f",  // or any other key binding
+    "when": "editorTextFocus",
+    "command": "moveby.calculation",
+    "args": {
+      "lineNrEx": "offset.line",
+      "charNrEx": "offset.character"
     }
   }
 ```
