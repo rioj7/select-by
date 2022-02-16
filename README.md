@@ -633,35 +633,6 @@ Define 2 key bindings (you can change the assigned keys)
   }
 ```
 
-## Release Notes
-
-### v1.10.0
-* `selectby.anchorAndActiveSeparate`
-
-### v1.9.0
-* `selectby.mark` : argument `first` to reset call number
-* web extension
-
-### v1.8.0 `selectby.linenr` : `inselection` only places cursors in the selections
-
-### v1.7.0 `selectby.mark` : Mark position of cursor(s), create selection(s) on next mark
-
-### v1.6.0 `forward/backwardAllowCurrentPosition`
-
-### v1.5.1 `moveby.regex` fix a few cases
-
-### v1.5.0 `moveby.regex` add `checkCurrent` option
-
-### v1.4.0 `selectby.swapActive` swap cursor position within selection(s)
-
-### v1.3.0 `selectby.regex` in keybinding can have an object as `args` property
-
-### v1.2.0 `moveby.regex` has repeat property with ask possibility
-
-### v1.1.0 `selectby.removeCursor(Above|Below)` reduce number of Multi Cursors
-
-### v1.0.0 `moveby.calculation` move the cursor to lineNr:charPos with a calculation
-
 # TODO
 
 * Support for Multi Cursors

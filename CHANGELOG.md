@@ -1,0 +1,62 @@
+# Change Log
+
+## [Unreleased]
+### Added
+- add CHANGELOG.md
+
+## [1.11.0] 2022-01-30
+### Added
+- `moveby.calculation` by offset
+
+## [1.10.0] 2022-01-05
+### Added
+- `selectby.anchorAndActiveSeparate`
+
+## [1.9.0] 2021-11-05
+### Added
+- `selectby.mark` : argument `first` to reset call number
+- web extension
+
+## [1.8.0] 2021-09-22
+### Added
+- `selectby.linenr` : `inselection` only places cursors in the selections
+
+## [1.7.0] 2021-08-19
+### Added
+- `selectby.mark` : Mark position of cursor(s), create selection(s) on next mark
+
+## [1.6.0] 2021-08-02
+### Added
+- `forward/backwardAllowCurrentPosition`
+
+## [1.5.1] 2021-06-27
+### Added
+- `moveby.regex` fix a few cases
+
+## [1.5.0] 2021-06-18
+### Added
+- `moveby.regex` add `checkCurrent` option
+
+## [1.4.0] 2021-05-24
+### Added
+- `selectby.swapActive` swap cursor position within selection(s)
+
+## [1.3.1] 2021-03-22
+### Added
+- `moveby.calculation` now has `selections` variable
+
+## [1.3.0] 2021-03-06
+### Added
+- `selectby.regex` in keybinding can have an object as `args` property
+
+## [1.2.0] 2021-02-23
+### Added
+- `moveby.regex` has repeat property with ask possibility
+
+## [1.1.0] 2021-02-22
+### Added
+- `selectby.removeCursor(Above|Below)` reduce number of Multi Cursors
+
+## [1.0.0] 2020-11-25
+### Added
+- `moveby.calculation` move the cursor to `lineNr:charPos` with a calculation
