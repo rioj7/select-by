@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 ### Added
+
+## [1.12.0] 2022-02-17
+### Added
+- `forwardShrink` and `backwardShrink` to reduce selection
 - add CHANGELOG.md
 
 ## [1.11.0] 2022-01-30

@@ -37,6 +37,8 @@ The ranges are specified in the `settings.json` file for entry `selectby.regexes
     * `forwardNext`: the regular expression to search for starting at the end of the **forward** search to the end of the file. Or `false` (to override User setting). [See explanation](#select-by-with-forwardnext).
     * `backwardInclude`: should the matched **backward** search text be part of the selection (default: `true`)
     * `forwardInclude`: should the matched **forward** search text be part of the selection (default: `true`)
+    * `backwardShrink`: do we reduce (shrink) at the current selection start. Find next `backward` regular expression relative to selection start (default: `false`)
+    * `forwardShrink`: do we reduce (shrink) at the current selection end. Find previous `forward` regular expression relative to selection end (default: `false`)
     * `backwardAllowCurrentPosition`: is the current selection start an allowed backward position (default: `true`)
     * `forwardAllowCurrentPosition`: is the current selection end an allowed forward position (default: `true`)
     * `forwardNextInclude`: should the matched **forwardNext** search text be part of the selection (default: `true`)

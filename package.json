@@ -4,7 +4,7 @@
   "description": "Select text range based on certain criteria (regex,...) and move cursor by regex",
   "publisher": "rioj7",
   "license": "MIT",
-  "version": "1.11.0",
+  "version": "1.12.0",
   "engines": {"vscode": "^1.55.0"},
   "categories": ["Other"],
   "keywords": ["select","text","range", "move", "cursor"],
@@ -133,9 +133,17 @@
                   "type": "boolean",
                   "description": "(Optional) is the current selection end an allowed forward position (default: true)"
                 },
+                "forwardShrink": {
+                  "type": "boolean",
+                  "description": "(Optional) do we reduce (shrink) at the current selection end. Find previous \"forward\" regular expression relative to selection end. (default: false)"
+                },
                 "backwardAllowCurrentPosition": {
                   "type": "boolean",
                   "description": "(Optional) is the current selection start an allowed backward position (default: true)"
+                },
+                "backwardShrink": {
+                  "type": "boolean",
+                  "description": "(Optional) do we reduce (shrink) at the current selection start. Find next \"backward\" regular expression relative to selection start. (default: false)"
                 },
                 "forwardNext": {
                   "type": ["string", "boolean"],
@@ -192,7 +200,9 @@
               },
               "dependencies": {
                 "backwardInclude": ["backward"],
+                "backwardShrink": ["backward"],
                 "forwardInclude": ["forward"],
+                "forwardShrink": ["forward"],
                 "backwardAllowCurrentPosition": ["backward"],
                 "forwardAllowCurrentPosition": ["forward"],
                 "forwardNextInclude": ["forwardNext"],

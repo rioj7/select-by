@@ -54,27 +54,38 @@ function activate(context) {
     regex = getProperty(search, "backward");
     if (regex && isString(regex)) {
       let incMatch = getProperty(search, "backwardInclude", true);
+      let backwardShrink = getProperty(search, "backwardShrink", false);
       let backwardAllowCurrent = getProperty(search, "backwardAllowCurrentPosition", true);
       regex = new RegExp(regex, flags);
-      selectStart = 0;
-      regex.lastIndex = 0;
-      while (true) {
-        let prevLastIndex = regex.lastIndex;
-        let result = regex.exec(docText);
-        if (result == null) { break; }
-        if (result.index >= offsetCursor) { break; }
-        let newSelectStart = incMatch ? result.index : regex.lastIndex;
-        if (prevLastIndex === regex.lastIndex) { // empty match
-          regex.lastIndex = prevLastIndex + 1;
+      if (backwardShrink) {
+        regex.lastIndex = selectStart;
+        let result;
+        while ((result=regex.exec(docText)) != null) {
+          selectStart = incMatch ? result.index : regex.lastIndex;
+          if (incMatch && selectStart === offsetCursor) { continue; }
+          break;
         }
-        if (!backwardAllowCurrent && newSelectStart === offsetCursor) { continue; }
-        selectStart = newSelectStart;
+      } else {
+        selectStart = 0;
+        regex.lastIndex = 0;
+        while (true) {
+          let prevLastIndex = regex.lastIndex;
+          let result = regex.exec(docText);
+          if (result == null) { break; }
+          if (result.index >= offsetCursor) { break; }
+          let newSelectStart = incMatch ? result.index : regex.lastIndex;
+          if (prevLastIndex === regex.lastIndex) { // empty match
+            regex.lastIndex = prevLastIndex + 1;
+          }
+          if (!backwardAllowCurrent && newSelectStart === offsetCursor) { continue; }
+          selectStart = newSelectStart;
+        }
       }
     }
     let currentSelectionEnd = editor.document.offsetAt(editor.selection.end);
     let selectEnd = currentSelectionEnd;
     regex = getProperty(search, "forward");
-    var regexForwardNext = getProperty(search, "forwardNext");
+    let regexForwardNext = getProperty(search, "forwardNext");
     let forwardNextInclude = getProperty(search, "forwardNextInclude", true);
     let forwardNextExtendSelection = getProperty(search, "forwardNextExtendSelection", false);
     let forwardAllowCurrent = getProperty(search, "forwardAllowCurrentPosition", true);
@@ -98,11 +109,12 @@ function activate(context) {
       }
       return [matchStart, matchEnd];
     };
-    var startForwardNext = selectEnd;
-    var forwardResult = [];
+    let startForwardNext = selectEnd;
+    let forwardResult = [];
     let needNewForwardSearch = true;
     if (regex && isString(regex)) {
       let forwardInclude = getProperty(search, "forwardInclude", true);
+      let forwardShrink = getProperty(search, "forwardShrink", false);
       let incMatch = forwardInclude;
       if (regexForwardNext && isString(regexForwardNext)) { // we have to flip the incMatch
         incMatch = !incMatch;
@@ -139,16 +151,29 @@ function activate(context) {
         }
       }
       if (needNewForwardSearch) {
-        regex.lastIndex = selectEnd;
-        selectEnd = docText.length;
-        startForwardNext = docText.length;
-        let result;
-        while ((result=regex.exec(docText)) != null) {
-          selectEnd = incMatch ? regex.lastIndex : result.index;
-          startForwardNext = regex.lastIndex;
-          forwardResult = result.slice();
-          if (!forwardAllowCurrent && selectEnd === currentSelectionEnd) { continue; }
-          break;
+        if (forwardShrink) {
+          selectEnd = 0;
+          regex.lastIndex = 0;
+          let result;
+          while ((result=regex.exec(docText)) != null) {
+            let newSelectEnd = incMatch ? regex.lastIndex : result.index;
+            if (newSelectEnd >= currentSelectionEnd) { break; }
+            selectEnd = newSelectEnd;
+            startForwardNext = regex.lastIndex;
+            forwardResult = result.slice();
+          }
+        } else {
+          regex.lastIndex = selectEnd;
+          selectEnd = docText.length;
+          startForwardNext = docText.length;
+          let result;
+          while ((result=regex.exec(docText)) != null) {
+            selectEnd = incMatch ? regex.lastIndex : result.index;
+            startForwardNext = regex.lastIndex;
+            forwardResult = result.slice();
+            if (!forwardAllowCurrent && selectEnd === currentSelectionEnd) { continue; }
+            break;
+          }
         }
       }
     }
