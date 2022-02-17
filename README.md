@@ -10,11 +10,11 @@ The extension has commands for 8 things:
 * [Move By](#move-by): move the cursor based on Regular Expressions or a Calculation
 
 # Select By
-Select part of the file content surrounding the selection based on Regular Expressions. The current selection is extended by searching forward and or backward or forward twice. If there is no current selection the cursor position is used.
+Select part of the file content surrounding the selection based on Regular Expressions. The current selection is extended or shrunk by searching forward and or backward or forward twice. If there is no current selection the cursor position is used.
 
 You can specify a "Search Back" expression, a "Search Forward" expression and  a "Search Forward Next" expression. If they are not specified that search direction is not performed.
 
-So you can extend the selection
+You can extend a side of the selection:
 
 * Forward: from the selection end (or cursor) to the next occurrence of a Regular Expression or end of the file
 * Backward: from the selection start (or cursor) search back for a Regular Expression or start of the file
@@ -22,6 +22,13 @@ So you can extend the selection
 * ForwardNextExtendSelection: if the Forward Regular Expression matches at the start of the selection the ForwardNext Regular Expression extends the selection. Otherwise a normal ForwardNext search.
 * or combine Forward and Backward
 * or combine Forward and ForwardNext
+
+You can shrink a side of the selection:
+
+* from the selection start (or cursor) to the next occurrence of the Backward Regular Expression or end of the file. Set `backwardShrink` to true.
+* from the selection end (or cursor) to the previous occurrence of the Forward Regular Expression or start of the file. Set `forwardShrink` to true.
+
+You can shrink one side of the selection and expand the other side of the selection.
 
 You can specify any number of ranges specified by Regular Expressions that can be linked to keyboard shortcuts. A range can have any name.
 

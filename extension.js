@@ -59,6 +59,7 @@ function activate(context) {
       regex = new RegExp(regex, flags);
       if (backwardShrink) {
         regex.lastIndex = selectStart;
+        selectStart = docText.length;
         let result;
         while ((result=regex.exec(docText)) != null) {
           selectStart = incMatch ? result.index : regex.lastIndex;
@@ -195,6 +196,9 @@ function activate(context) {
           break;
         }
       }
+    }
+    if (selectStart > selectEnd) {
+      [selectStart, selectEnd] = [selectEnd, selectStart];
     }
     if (getProperty(search, "copyToClipboard", false)) {
       vscode.env.clipboard.writeText(docText.substring(selectStart, selectEnd)).then((v)=>v, (v)=>null);
