@@ -3,6 +3,7 @@ const vscode = require('vscode');
 function activate(context) {
 
   var getProperty = (obj, prop, deflt) => { return obj.hasOwnProperty(prop) ? obj[prop] : deflt; };
+  var getPropertyOrGlobal = (obj, prop, globalProps, deflt) => { return getProperty(obj, prop, getProperty(globalProps, prop, deflt)); };
   var isString = obj => typeof obj === 'string';
   const isArray = obj => Array.isArray(obj);
   const isObject = obj => (typeof obj === 'object') && !isArray(obj);
@@ -290,10 +291,11 @@ function activate(context) {
       return item;
     });
   };
-  var findRegexLocation = (editor, selectionN, regex, findPrev, findStart, wrapCursor, checkCurrent) => {
+  /** @returns {vscode.Position} @param {vscode.TextEditor} editor @param {vscode.Position} currentPosition @param {RegExp} regex @param {boolean} findPrev @param {boolean} findStart @param {boolean} wrapCursor @param {boolean} checkCurrent */
+  var findRegexPosition = (editor, currentPosition, regex, findPrev, findStart, wrapCursor=false, checkCurrent=false) => {
     var docText = editor.document.getText();
     var wrappedCursor = false;
-    var offsetCursor = editor.document.offsetAt(findPrev ? selectionN.start : selectionN.end);
+    var offsetCursor = editor.document.offsetAt(currentPosition);
     var location = offsetCursor;
     if (regex) {
       if (checkCurrent) {
@@ -302,7 +304,7 @@ function activate(context) {
         while ((result = regex.exec(docText))!==null) {
           location = findStart ? result.index : regex.lastIndex;
           if (location > offsetCursor) { break; }
-          if (location === offsetCursor) { return location; }
+          if (location === offsetCursor) { return editor.document.positionAt(location); }
         }
       }
       regex.lastIndex = findPrev ? 0 : offsetCursor;
@@ -363,11 +365,42 @@ function activate(context) {
         }
       }
     }
-    return location;
+    return editor.document.positionAt(location);
   };
-  var updateEditorSelections = (editor, locations) => {
-    if (locations.length === 0) return;
-    editor.selections = locations;
+  /** @param {vscode.TextEditor} editor @param {vscode.Position} position */
+  var newPositionByProperties = (editor, position, props, propsGlobal) => {
+    if (props === undefined) { return position; }
+    let regex = getPropertyOrGlobal(props, 'regex', propsGlobal);
+    if (regex === undefined) { return position; }
+    let direction = getPropertyOrGlobal(props, 'direction', propsGlobal, 'next');
+    let repeat = getPropertyOrGlobal(props, 'repeat', propsGlobal, 1);
+    let flags = getPropertyOrGlobal(props, 'flags', propsGlobal, '') + 'g';
+    regex = new RegExp(regex, flags);
+    let findPrev = direction === 'prev';
+    let findStart = findPrev;
+    range(repeat).forEach(i => {
+      let newPosition = findRegexPosition(editor, position, regex, findPrev, findStart);
+      if (newPosition !== undefined) { position = newPosition; }
+    });
+    return position;
+  };
+  /** @param {vscode.TextEditor} editor @param {vscode.Selection} selection */
+  var anchorAndActiveByRegex = (editor, selection, args) => {
+    if (args === undefined) { args = {}; }
+    let anchor = newPositionByProperties(editor, selection.anchor, getProperty(args, 'anchor'), args);
+    let active = newPositionByProperties(editor, selection.active, getProperty(args, 'active'), args);
+    return new vscode.Selection(anchor, active);
+  };
+  /** @param {vscode.TextEditor} editor */
+  var selectbySelections = (editor, newSelection) => {
+    let selections = editor.selections
+        .map(newSelection)
+        .filter( s => s !== undefined);
+    updateEditorSelections(editor, selections);
+  };
+  var updateEditorSelections = (editor, selections) => {
+    if (selections.length === 0) return;
+    editor.selections = selections;
     var rng = new vscode.Range(editor.selection.start, editor.selection.start);
     editor.revealRange(rng, vscode.TextEditorRevealType[vscode.workspace.getConfiguration('moveby', null).get('revealType')]);
   };
@@ -376,19 +409,16 @@ function activate(context) {
     let newSelections = [...selections];
     return newSelections.sort((a, b) => { return a.start.compareTo(b.start); })
   };
-  var movebyLocations = (editor, newLocation, repeat) => {
+  var movebyPositions = (editor, newPosition, repeat) => {
     if (!repeat) { repeat = 1; }
-    let locations = editor.selections;
+    let selections = editor.selections;
     range(repeat).forEach(i => {
-      locations = locations
-          .map(newLocation)
-          .filter( loc => loc !== undefined)
-          .map( location => {
-            location = editor.document.positionAt(location);
-            return new vscode.Selection(location, location);
-          });
+      selections = selections
+          .map(newPosition)
+          .filter( pos => pos !== undefined)
+          .map( position => new vscode.Selection(position, position) );
     });
-    updateEditorSelections(editor, locations);
+    updateEditorSelections(editor, selections);
   };
   var movebyRegEx = async (editor, args) => {
     if (args === undefined) { args = {}; } // TODO use QuickSelect to construct an args array
@@ -424,11 +454,11 @@ function activate(context) {
     let findPrev = properties.indexOf('prev') >= 0;
     let findStart = properties.indexOf('start') >= 0;
     let wrapCursor = properties.indexOf('wrap') >= 0;
-    movebyLocations(editor, s => findRegexLocation(editor, s, regex, findPrev, findStart, wrapCursor, checkCurrent), Number(repeat));
+    movebyPositions(editor, s => findRegexPosition(editor, findPrev ? s.start : s.end, regex, findPrev, findStart, wrapCursor, checkCurrent), Number(repeat));
   };
-  function calculateLocation(editor, selection, lineNrExFunc, charNrExFunc, offset) {
+  function calculatePosition(editor, selection, lineNrExFunc, charNrExFunc, offset) {
     let arg = {selection: selection, currentLine: editor.document.lineAt(selection.start.line).text, selections: editor.selections, offset: offset};
-    return editor.document.offsetAt(new vscode.Position(Math.floor(lineNrExFunc(arg)), Math.floor(charNrExFunc(arg))));
+    return new vscode.Position(Math.floor(lineNrExFunc(arg)), Math.floor(charNrExFunc(arg)));
   }
   const transformCalculationEx = str => str.replace(/selections?|currentLine|offset/g, 'arg.$&');
   var movebyCalculation = async (editor, args) => {
@@ -444,7 +474,7 @@ function activate(context) {
     }
     let lineNrExFunc = expressionFunc(transformCalculationEx(lineNrEx), 'arg');
     let charNrExFunc = expressionFunc(transformCalculationEx(charNrEx), 'arg');
-    movebyLocations(editor, s => calculateLocation(editor, s, lineNrExFunc, charNrExFunc, offset));
+    movebyPositions(editor, s => calculatePosition(editor, s, lineNrExFunc, charNrExFunc, offset));
   };
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.swapActive', editor => {
     editor.selections = editor.selections.map( s => new vscode.Selection(s.active, s.anchor));
@@ -454,6 +484,10 @@ function activate(context) {
       if (s.isEmpty) { return s; }
       return [new vscode.Selection(s.start, s.start), new vscode.Selection(s.end, s.end)];
     }).flat();
+  }) );
+  context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.anchorAndActiveByRegex', (editor, edit, args) => {
+    if (args === undefined) { return; }
+    selectbySelections(editor, s => anchorAndActiveByRegex(editor, s, args));
   }) );
   let markFirst;
   let markPositions;

@@ -3,6 +3,10 @@
 ## [Unreleased]
 ### Added
 
+## [1.13.0] 2022-03-11
+### Added
+- `selectby.anchorAndActiveByRegex` : Modify the anchor and active position of the selection(s)
+
 ## [1.12.0] 2022-02-17
 ### Added
 - `forwardShrink` and `backwardShrink` to reduce selection

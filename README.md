@@ -6,6 +6,7 @@ The extension has commands for 8 things:
 * [Select By Remove Cursor](#select-by-remove-cursor): Remove one of the multi cursors
 * `selectby.swapActive` : Swap anchor and active (cursor) positions of selection(s)
 * `selectby.anchorAndActiveSeparate` : Create separate cursors for anchor and active position of the selection(s)
+* [Select By Anchor and Active by Regex](#select-by-anchor-and-active-by-regex): Modify the anchor and active position of the selection(s)
 * [Select By Mark](#select-by-mark): Mark position of cursor(s), create selection(s) on next mark
 * [Move By](#move-by): move the cursor based on Regular Expressions or a Calculation
 
@@ -420,6 +421,79 @@ You can combine it with the `moveby.regex` command of this extension to move the
 
 The marked positions are decorated with a ◆ character using the `editor.selectionBackground` color.
 
+# Select By Anchor and Active by Regex
+
+The command `selectby.regex` modifies the `start` and `end` of the selection. Standard Expand/Shrink Selection (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Arrow</kbd>) modifies the `active` position (cursor) based on the word definition of the language. With the command `selectby.anchorAndActiveByRegex` you can modify the `anchor` and `active` position of the selection(s).
+
+At the moment the command `selectby.anchorAndActiveByRegex` accepts all arguments in an object that is part of the key binding or command call in cases like the extension [multi-command](https://marketplace.visualstudio.com/items?itemName=ryuta46.multi-command).
+
+The argument of the command is an object with the following properties:
+
+* `regex` : global definition of the regular expression to search for
+* `flags` : global definition of the flags used by the regular expression (`g` is added by the extension) (default: `""` [no flags])
+* `direction` : global definition of the direction to search. (default: `next`)  
+  Possible values:
+    * `next` : determine the first position of the regex towards the **end** of the file.  
+      the new position will be the _end_ of the text matched by the regex
+    * `prev` : determine the first position of the regex towards the **begin** of the file.  
+      the new position will be the _start_ of the text matched by the regex
+* `repeat` : global definition of how often to search for (default: `1`)
+* `anchor` : an object, can be empty. Modify the `anchor` position of the selection based on the properties:
+    * `regex` : replace global definition if present
+    * `flags` : replace global definition if present
+    * `direction` : replace global definition if present
+    * `repeat` : replace global definition if present
+* `active` : an object, can be empty. Modify the `active` position of the selection based on the properties:
+    * `regex` : replace global definition if present
+    * `flags` : replace global definition if present
+    * `direction` : replace global definition if present
+    * `repeat` : replace global definition if present
+
+If `anchor` or `active` is not present then that position will not change.
+
+This command support Multi Cursor (multiple selections).
+
+## Example
+
+Modify the `active` position (cursor) to the next/prev double character that is not a space or tab
+
+By adding an extra modifier key (`alt`) you can make a bigger jump by setting a `repeat`.
+
+```json
+  {
+    "key": "ctrl+shift+right",
+    "command": "selectby.anchorAndActiveByRegex",
+    "when": "editorTextFocus",
+    "args": {
+      "active": { "regex": "([^ \\t])\\1", "direction": "next" }
+    }
+  },
+  {
+    "key": "ctrl+shift+left",
+    "command": "selectby.anchorAndActiveByRegex",
+    "when": "editorTextFocus",
+    "args": {
+      "active": { "regex": "([^ \\t])\\1", "direction": "prev" }
+    }
+  },
+  {
+    "key": "ctrl+shift+alt+right",
+    "command": "selectby.anchorAndActiveByRegex",
+    "when": "editorTextFocus",
+    "args": {
+      "active": { "regex": "([^ \\t])\\1", "direction": "next", "repeat": 5 }
+    }
+  },
+  {
+    "key": "ctrl+shift+alt+left",
+    "command": "selectby.anchorAndActiveByRegex",
+    "when": "editorTextFocus",
+    "args": {
+      "active": { "regex": "([^ \\t])\\1", "direction": "prev", "repeat": 5 }
+    }
+  }
+```
+
 # Move By
 
 You can move the cursor based on [Regular Expressions](#move-by-regular-expression) or using a [Calculation](#move-by-calculation).
@@ -585,7 +659,7 @@ If something reports a problem at a character offset (relative to start of file)
 
 ## `moveby` and Multi Cursor
 
-`moveby.regex` and `moveby.calculation` support multi cursor. For each cursor the search is performed and the cursor is moved to the new location.
+`moveby.regex` and `moveby.calculation` support multi cursor. For each cursor the search is performed or the cursor is moved to the new location.
 
 If the Regular Expression is not found for a particular selection/cursor the behavior depends on the number of cursors that have found a new location:
 
