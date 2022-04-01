@@ -4,10 +4,10 @@
   "description": "Select text range based on certain criteria (regex,...) and move cursor by regex",
   "publisher": "rioj7",
   "license": "MIT",
-  "version": "1.13.0",
+  "version": "1.14.0",
   "engines": {"vscode": "^1.55.0"},
   "categories": ["Other"],
-  "keywords": ["select","text","range", "move", "cursor"],
+  "keywords": ["select","text","range","move","cursor","multi"],
   "icon": "images/icon.png",
   "galleryBanner": {"color": "#000080", "theme": "dark"},
   "activationEvents": [
@@ -25,6 +25,9 @@
     "onCommand:selectby.anchorAndActiveSeparate",
     "onCommand:selectby.anchorAndActiveByRegex",
     "onCommand:selectby.mark",
+    "onCommand:selectby.addNewSelectionAtOffset",
+    "onCommand:selectby.moveLastSelection",
+    "onCommand:selectby.moveLastSelectionActive",
     "onCommand:moveby.regex",
     "onCommand:moveby.calculation"
   ],
@@ -98,6 +101,21 @@
       {
         "command": "selectby.mark",
         "title": "Mark position of cursor(s), create selection(s) on next mark",
+        "category": "SelectBy"
+      },
+      {
+        "command": "selectby.addNewSelectionAtOffset",
+        "title": "Add a new selection at an offset (default: 1)",
+        "category": "SelectBy"
+      },
+      {
+        "command": "selectby.moveLastSelectionActive",
+        "title": "Modify (extend/reduce) the last selection by moving the Active position \"offset\" of characters left/right (default: 1)",
+        "category": "SelectBy"
+      },
+      {
+        "command": "selectby.moveLastSelection",
+        "title": "Move the last selection number of characters left/right (default: 1)",
         "category": "SelectBy"
       },
       {

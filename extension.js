@@ -590,6 +590,37 @@ function activate(context) {
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.removeCursorAbove', (editor, edit, args) => {
     removeCursor(editor, args, (sel, index, arr) => index > 0 );
   }) );
+  const positionAtOffset = (editor, position, args) => {
+    let newOffset = editor.document.offsetAt(position) + getProperty(args, 'offset', 1);
+    if (newOffset<0 || newOffset>editor.document.getText().length) { return undefined; }
+    return editor.document.positionAt(newOffset);
+  };
+  context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.addNewSelectionAtOffset', (editor, edit, args) => {
+    if (args === undefined) { args = {}; }
+    let selections = editor.selections.slice();
+    const newPosition = positionAtOffset(editor, selections[selections.length-1].end, args);
+    if (!newPosition) { return; }
+    selections.push(new vscode.Selection(newPosition, newPosition));
+    updateEditorSelections(editor, selections);
+  }) );
+  const updateLastSelection = (editor, argsAnchor, argsActive) => {
+    let selections = editor.selections.slice();
+    let lastSelectionIdx = selections.length-1;
+    let lastSelection = selections[lastSelectionIdx];
+    let newAnchor = positionAtOffset(editor, lastSelection.anchor, argsAnchor);
+    let newActive = positionAtOffset(editor, lastSelection.active, argsActive);
+    if (!newAnchor || !newActive) { return; }
+    selections[lastSelectionIdx] = new vscode.Selection(newAnchor, newActive);
+    updateEditorSelections(editor, selections);
+  };
+  context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.moveLastSelection', (editor, edit, args) => {
+    if (args === undefined) { args = {}; }
+    updateLastSelection(editor, args, args);
+  }) );
+  context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.moveLastSelectionActive', (editor, edit, args) => {
+    if (args === undefined) { args = {}; }
+    updateLastSelection(editor, {offset:0}, args);
+  }) );
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('moveby.regex', (editor, edit, args) => { movebyRegEx(editor, args);}) );
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('moveby.calculation', (editor, edit, args) => { movebyCalculation(editor, args);}) );
 };

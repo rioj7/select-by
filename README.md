@@ -8,6 +8,7 @@ The extension has commands for 8 things:
 * `selectby.anchorAndActiveSeparate` : Create separate cursors for anchor and active position of the selection(s)
 * [Select By Anchor and Active by Regex](#select-by-anchor-and-active-by-regex): Modify the anchor and active position of the selection(s)
 * [Select By Mark](#select-by-mark): Mark position of cursor(s), create selection(s) on next mark
+* [Select By Multi Cursor with keyboard](#select-by-multi-cursor-with-keyboard): Create and modify Multi Cursors with the keyboard
 * [Move By](#move-by): move the cursor based on Regular Expressions or a Calculation
 
 # Select By
@@ -493,6 +494,53 @@ By adding an extra modifier key (`alt`) you can make a bigger jump by setting a 
     }
   }
 ```
+
+# Select By Multi Cursor with keyboard
+
+You can create and modify Multi Cursors with the keyboard with the commands:
+
+* `selectby.addNewSelectionAtOffset` : Add a new selection at an offset (default: 1)
+* `selectby.moveLastSelectionActive` : Modify (extend/reduce) the last selection by moving the Active position `offset` of characters left/right (default: 1)
+* `selectby.moveLastSelection` : Move the last selection number of characters left/right (default: 1)
+
+All 3 commands have 1 property, set in the `args` property of the key binding. If called from the Command Palette the value of `offset` is `1`.
+
+You can define a set of key bindings to use these commands. I have used `ctrl+i` as a prefix.
+
+```json
+  {
+    "key": "ctrl+i ctrl+alt+right",
+    "when": "editorTextFocus",
+    "command": "selectby.addNewSelectionAtOffset",
+    "args": {"offset": 1}
+  },
+  {
+    "key": "ctrl+i shift+right",
+    "when": "editorTextFocus",
+    "command": "selectby.moveLastSelectionActive",
+    "args": {"offset": 1}
+  },
+  {
+    "key": "ctrl+i shift+left",
+    "when": "editorTextFocus",
+    "command": "selectby.moveLastSelectionActive",
+    "args": {"offset": -1}
+  },
+  {
+    "key": "ctrl+i right",
+    "when": "editorTextFocus",
+    "command": "selectby.moveLastSelection",
+    "args": {"offset": 1}
+  },
+  {
+    "key": "ctrl+i left",
+    "when": "editorTextFocus",
+    "command": "selectby.moveLastSelection",
+    "args": {"offset": -1}
+  }
+```
+
+Maybe an option is to toggle a context variable that signals a mode, and use the `when` clause to determine if we use the default keybinding for the arrow keys of our custom key bindings.
 
 # Move By
 

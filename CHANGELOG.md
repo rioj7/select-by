@@ -3,6 +3,13 @@
 ## [Unreleased]
 ### Added
 
+## [1.14.0] 2022-04-01
+### Added
+- Create and modify Multi Cursors with the keyboard:
+  - `selectby.addNewSelectionAtOffset`
+  - `selectby.moveLastSelectionActive`
+  - `selectby.moveLastSelection`
+
 ## [1.13.0] 2022-03-11
 ### Added
 - `selectby.anchorAndActiveByRegex` : Modify the anchor and active position of the selection(s)
