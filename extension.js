@@ -595,13 +595,17 @@ function activate(context) {
     if (newOffset<0 || newOffset>editor.document.getText().length) { return undefined; }
     return editor.document.positionAt(newOffset);
   };
-  context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.addNewSelectionAtOffset', (editor, edit, args) => {
+  context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.addNewSelection', (editor, edit, args) => {
     if (args === undefined) { args = {}; }
     let selections = editor.selections.slice();
     const newPosition = positionAtOffset(editor, selections[selections.length-1].end, args);
     if (!newPosition) { return; }
     selections.push(new vscode.Selection(newPosition, newPosition));
     updateEditorSelections(editor, selections);
+  }) );
+  // TODO name change 2022-04-02
+  context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.addNewSelectionAtOffset', (editor, edit, args) => {
+    vscode.window.showInformationMessage('selectby.addNewSelectionAtOffset renamed to selectby.addNewSelection');
   }) );
   const updateLastSelection = (editor, argsAnchor, argsActive) => {
     let selections = editor.selections.slice();

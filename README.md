@@ -499,8 +499,8 @@ By adding an extra modifier key (`alt`) you can make a bigger jump by setting a 
 
 You can create and modify Multi Cursors with the keyboard with the commands:
 
-* `selectby.addNewSelectionAtOffset` : Add a new selection at an offset (default: 1)
-* `selectby.moveLastSelectionActive` : Modify (extend/reduce) the last selection by moving the Active position `offset` of characters left/right (default: 1)
+* `selectby.addNewSelection` : Add a new selection at an offset (default: 1)
+* `selectby.moveLastSelectionActive` : Modify (extend/reduce) the last selection by moving the Active position `offset` characters left/right (default: 1)
 * `selectby.moveLastSelection` : Move the last selection number of characters left/right (default: 1)
 
 All 3 commands have 1 property, set in the `args` property of the key binding. If called from the Command Palette the value of `offset` is `1`.
@@ -511,7 +511,7 @@ You can define a set of key bindings to use these commands. I have used `ctrl+i`
   {
     "key": "ctrl+i ctrl+alt+right",
     "when": "editorTextFocus",
-    "command": "selectby.addNewSelectionAtOffset",
+    "command": "selectby.addNewSelection",
     "args": {"offset": 1}
   },
   {
@@ -540,7 +540,7 @@ You can define a set of key bindings to use these commands. I have used `ctrl+i`
   }
 ```
 
-Maybe an option is to toggle a context variable that signals a mode, and use the `when` clause to determine if we use the default keybinding for the arrow keys of our custom key bindings.
+Maybe an option is to toggle a context variable that signals a mode, and use the `when` clause to determine if we use the default keybinding for the arrow keys or our custom key bindings.
 
 # Move By
 

@@ -3,10 +3,10 @@
 ## [Unreleased]
 ### Added
 
-## [1.14.0] 2022-04-01
+## [1.14.1] 2022-04-02
 ### Added
 - Create and modify Multi Cursors with the keyboard:
-  - `selectby.addNewSelectionAtOffset`
+  - `selectby.addNewSelection`
   - `selectby.moveLastSelectionActive`
   - `selectby.moveLastSelection`
 
