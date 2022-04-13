@@ -505,42 +505,55 @@ You can create and modify Multi Cursors with the keyboard with the commands:
 
 All 3 commands have 1 property, set in the `args` property of the key binding. If called from the Command Palette the value of `offset` is `1`.
 
-You can define a set of key bindings to use these commands. I have used `ctrl+i` as a prefix.
+You can define a set of key bindings to use these commands.
+
+By using a custom context variable (extension [Extra Context](https://marketplace.visualstudio.com/items?itemName=rioj7.extra-context)) to set a mode, and use the `when` clause to determine if we use the default key binding for the arrow keys or our custom key bindings.
+
+With the command `extra-context.toggleVariable` you can toggle the variable and thus the mode.
 
 ```json
   {
-    "key": "ctrl+i ctrl+alt+right",
+    "key": "alt+F5", // or some other key combo
     "when": "editorTextFocus",
+    "command": "extra-context.toggleVariable",
+    "args": {"name": "multiCursorByKeyboard"}
+  },
+  {
+    "key": "ctrl+alt+right",
+    "when": "editorTextFocus && extraContext:multiCursorByKeyboard",
     "command": "selectby.addNewSelection",
     "args": {"offset": 1}
   },
   {
-    "key": "ctrl+i shift+right",
-    "when": "editorTextFocus",
+    "key": "ctrl+alt+left",
+    "when": "editorTextFocus && extraContext:multiCursorByKeyboard",
+    "command": "selectby.removeCursorBelow"
+  },
+  {
+    "key": "shift+right",
+    "when": "editorTextFocus && extraContext:multiCursorByKeyboard",
     "command": "selectby.moveLastSelectionActive",
     "args": {"offset": 1}
   },
   {
-    "key": "ctrl+i shift+left",
-    "when": "editorTextFocus",
+    "key": "shift+left",
+    "when": "editorTextFocus && extraContext:multiCursorByKeyboard",
     "command": "selectby.moveLastSelectionActive",
     "args": {"offset": -1}
   },
   {
-    "key": "ctrl+i right",
-    "when": "editorTextFocus",
+    "key": "right",
+    "when": "editorTextFocus && extraContext:multiCursorByKeyboard",
     "command": "selectby.moveLastSelection",
     "args": {"offset": 1}
   },
   {
-    "key": "ctrl+i left",
-    "when": "editorTextFocus",
+    "key": "left",
+    "when": "editorTextFocus && extraContext:multiCursorByKeyboard",
     "command": "selectby.moveLastSelection",
     "args": {"offset": -1}
   }
 ```
-
-Maybe an option is to toggle a context variable that signals a mode, and use the `when` clause to determine if we use the default keybinding for the arrow keys or our custom key bindings.
 
 # Move By
 
