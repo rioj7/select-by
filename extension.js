@@ -490,7 +490,7 @@ function activate(context) {
     selectbySelections(editor, s => anchorAndActiveByRegex(editor, s, args));
   }) );
   let markFirst;
-  let markPositions;
+  let markPositions = [];
   function resetMarks() {
     markFirst = true;
     markPositions = [];
@@ -516,6 +516,16 @@ function activate(context) {
       } else {
         editor.selections = editor.selections.map( (s, i) => new vscode.Selection(markPositions[i], s.active) );
       }
+      resetMarks();
+    }
+  }) );
+  context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.mark-restore', (editor, edit, args) => {
+    if (!editor) { return; }
+    if (markPositions.length == 0) { return; }
+    if (args === undefined) { args = {}; }
+    editor.selections = markPositions.map( m => new vscode.Selection(m, m) );
+    if (!getProperty(args, 'keepMarks')) {
+      editor.setDecorations(markDecoration, []);
       resetMarks();
     }
   }) );

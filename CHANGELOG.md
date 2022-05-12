@@ -3,6 +3,10 @@
 ## [Unreleased]
 ### Added
 
+## [1.15.0] 2022-05-13
+### Added
+- `selectby.mark-restore` : restore position of cursors to mark locations
+
 ## [1.14.1] 2022-04-02
 ### Added
 - Create and modify Multi Cursors with the keyboard:

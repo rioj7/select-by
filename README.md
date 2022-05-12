@@ -7,7 +7,7 @@ The extension has commands for 8 things:
 * `selectby.swapActive` : Swap anchor and active (cursor) positions of selection(s)
 * `selectby.anchorAndActiveSeparate` : Create separate cursors for anchor and active position of the selection(s)
 * [Select By Anchor and Active by Regex](#select-by-anchor-and-active-by-regex): Modify the anchor and active position of the selection(s)
-* [Select By Mark](#select-by-mark): Mark position of cursor(s), create selection(s) on next mark
+* [Select By Mark](#select-by-mark): Mark position of cursor(s), create selection(s) on next mark, restore cursor locations
 * [Select By Multi Cursor with keyboard](#select-by-multi-cursor-with-keyboard): Create and modify Multi Cursors with the keyboard
 * [Move By](#move-by): move the cursor based on Regular Expressions or a Calculation
 
@@ -365,7 +365,7 @@ Feature request by [blueray](https://stackoverflow.com/questions/69263442/how-to
 
 If you want every selection to be treated separately or you want the command to figure out the end line test (`&& n<=100`) you can add `&& inselection`. The text `inselection` is transformed to <code>((n>=<em>startLineNr</em>) && (n<=<em>endLineNr</em>))</code>. Where <em>startLineNr</em> and <em>endLineNr</em> are from each selection. If the end of a selection is at the start of a line that line is not considered to be part of the selection.
 
-This is also usefull to add to a keybinding, now the end line test depends on the selected text.
+This is also useful to add to a keybinding, now the end line test depends on the selected text.
 
 ```json
   {
@@ -402,6 +402,8 @@ A suggestion for keybinding:
 
 # Select By Mark
 
+## selectby.mark
+
 The command is `selectby.mark`.
 
 The `"args"` argument of the command can have the following properties:
@@ -421,6 +423,16 @@ You can use a second mark to view the selections up to now. Follow it by an imme
 You can combine it with the `moveby.regex` command of this extension to move the cursors by a search for a regular expression.
 
 The marked positions are decorated with a ◆ character using the `editor.selectionBackground` color.
+
+## selectby.mark-restore
+
+The command is `selectby.mark-restore`.
+
+The `"args"` argument of the command can have the following properties:
+
+* `keepMarks`: boolean, when `true` the marks are not removed (default: `false`)
+
+This command restores the cursor positions to the mark locations. It will clear the mark positions unless you set the argument `keepMarks` to true.
 
 # Select By Anchor and Active by Regex
 
@@ -452,7 +464,7 @@ The argument of the command is an object with the following properties:
 
 If `anchor` or `active` is not present then that position will not change.
 
-This command support Multi Cursor (multiple selections).
+This command supports Multi Cursor (multiple selections).
 
 ## Example
 

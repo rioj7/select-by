@@ -4,7 +4,7 @@
   "description": "Select text range based on certain criteria (regex,...) and move cursor by regex",
   "publisher": "rioj7",
   "license": "MIT",
-  "version": "1.14.1",
+  "version": "1.15.0",
   "engines": {"vscode": "^1.55.0"},
   "categories": ["Other"],
   "keywords": ["select","text","range","move","cursor","multi"],
@@ -25,6 +25,7 @@
     "onCommand:selectby.anchorAndActiveSeparate",
     "onCommand:selectby.anchorAndActiveByRegex",
     "onCommand:selectby.mark",
+    "onCommand:selectby.mark-restore",
     "onCommand:selectby.addNewSelection",
     "onCommand:selectby.moveLastSelection",
     "onCommand:selectby.moveLastSelectionActive",
@@ -102,6 +103,11 @@
       {
         "command": "selectby.mark",
         "title": "Mark position of cursor(s), create selection(s) on next mark",
+        "category": "SelectBy"
+      },
+      {
+        "command": "selectby.mark-restore",
+        "title": "Restore the position of the cursors to the marked location",
         "category": "SelectBy"
       },
       {
