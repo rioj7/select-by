@@ -573,20 +573,59 @@ You can move the cursor based on [Regular Expressions](#move-by-regular-expressi
 
 ## Move By Regular Expression
 
-The exported command is: `moveby.regex`
+The exported command is: `moveby.regex` (**MoveBy: Move cursor based on regex**)
 
-Move By uses the regex definitions as defined for Select By or specified in the `"args"` property of the key binding.
+To use fixed Regular Expressions or different properties for MoveBy you can create:
 
-If called from the Command Palette it behaves the same as a [key binding with an `"args"` property that is an Object](#args-of-keybinding-is-an-object) with the content:
+* 1 or more [key bindings in `keybindings.json`](https://code.visualstudio.com/docs/getstarted/keybindings). In the `args` property of the key binding you define the regex and properties.
+* define named regex and properties in the setting `moveby.regexes` and select one from a QuickPick list.
+
+The argument of the command can be:
+
+* `undefined` : when called from Command Palette or key binding without argument  
+  You are presented with a QuickPick list of arguments defined in the setting `moveby.regexes`.  
+  If `moveby.regexes` is empty it behaves as if the argument of the key binding or command was:
+  ```
+  "args": {
+    "ask": true,
+    "properties": ["next", "end", "nowrap"]
+  }
+  ```
+* a **string** : this is used as the key in the setting `moveby.regexes` to get an array or object.
+* an **array** : [key binding with an `"args"` property that is an Array](#args-of-keybinding-is-an-array)
+* an **object** : [key binding with an `"args"` property that is an Object](#args-of-keybinding-is-an-object)
+
+In the setting `moveby.regexes` you can define frequently used regex searches that you select from a QuickPick list. These searches are named (_`key`_). The name can also be used as string argument in a key binding or multi-command sequence.
+
+The setting `moveby.regexes` is an object with key-value pairs. The value can be an [array](#args-of-keybinding-is-an-array) or an [object](#args-of-keybinding-is-an-object).
+
+* the key for the search arguments can have any name
+* if the value is an object a few extra properties can be used
+    * `debugNotify`: show a notify message of the used search properties (User and Workspace properties are merged) (default: `false`)
+    * `label`, `description`, `detail`: (Optional) when MoveBy is called from the command palette it shows a QuickPick list. These 3 properties (`strings`) are used in the construction of the [QuickPickItem](https://code.visualstudio.com/api/references/vscode-api#QuickPickItem). The default value for `label` is the key name. The label is decorated with an additional icon in case the object contains the parameter `debugNotify`. In the 3 properties you can [use other icons](https://microsoft.github.io/vscode-codicons/dist/codicon.html) with the <code>&dollar;(<em>name</em>)</code>-syntax.
+
+An example for the setting `moveby.regexes`:
 
 ```
-    "args": {
+  "moveby.regexes": {
+    "Go to Last Dot": {
+      "regex": "\\.(?!.*\\.)",
+      "properties": ["next", "start"]
+    },
+    "--Ask-- $(regex) next end": {
       "ask": true,
-      "properties": ["next", "end", "nowrap"]
+      "properties": ["next", "end"]
+    },
+    "--Ask-- $(regex) next start": {
+      "ask": true,
+      "properties": ["next", "start"]
     }
+  }
 ```
 
-To use fixed Regular Expressions or different properties for Move By you need to create 1 or more [key bindings in `keybindings.json`](https://code.visualstudio.com/docs/getstarted/keybindings).
+You can use [icons](https://microsoft.github.io/vscode-codicons/dist/codicon.html) in the _key_ of the setting `moveby.regexes`.
+
+If you define setting `moveby.regexes` and you want the **Ask** regex functionality if called from the Command Palette you have to add a definition for this in the setting `moveby.regexes`.
 
 The details of the search are specified in the `"args"` property of the key binding. The `"args"` property can be an Array or an Object.
 
@@ -791,5 +830,4 @@ Define 2 key bindings (you can change the assigned keys)
 
 # TODO
 
-* Support for Multi Cursors
-* Move By called from Command Palette, Enter/Select options and remember RegExes for this section of VSC
+* Support for Multi Cursors for SelectBy

@@ -1,26 +1,100 @@
 const vscode = require('vscode');
 
+const getConfigRegExes = (config) => vscode.workspace.getConfiguration(config, null).get('regexes');
+const getConfigSelectByRegExes = () => getConfigRegExes('selectby');
+const getConfigMoveByRegExes = () => getConfigRegExes('moveby');
+const getProperty = (obj, prop, deflt) => { return obj.hasOwnProperty(prop) ? obj[prop] : deflt; };
+const getPropertyOrGlobal = (obj, prop, globalProps, deflt) => { return getProperty(obj, prop, getProperty(globalProps, prop, deflt)); };
+const isString = obj => typeof obj === 'string';
+const isArray = obj => Array.isArray(obj);
+const isObject = obj => (typeof obj === 'object') && !isArray(obj);
+const isPosInteger = value => /^\d+$/.test(value);
+
+class ConfigRegex {
+  constructor(config) {
+    this.recentlyUsed = [];
+    this.config = config;
+  }
+  isValidRegex(regex) { return false; }
+  defaultOnEmptyList() { return undefined; }
+  async getRegexKey(args) {
+    if (args !== undefined) { return args; }
+    let regexes = getConfigRegExes(this.config);
+    let qpItems = [];
+    for (const key in regexes) {
+      if (!regexes.hasOwnProperty(key)) { continue; }
+      const regex = regexes[key];
+      if (!this.isValidRegex(regex)) { continue; }
+      let label = getProperty(regex, 'label', key);
+      if (getProperty(regex, 'copyToClipboard')) { label += ' $(clippy)'; }
+      if (getProperty(regex, 'debugNotify')) { label += ' $(debug)'; }
+      let description = getProperty(regex, 'description');
+      let detail = getProperty(regex, 'detail');
+      qpItems.push( { idx: qpItems.length, regexKey: key, label, description, detail } );
+    }
+    if (qpItems.length === 0) {
+      let deflt = this.defaultOnEmptyList();
+      if (deflt === undefined) {
+        vscode.window.showInformationMessage("No usable regex found");
+      }
+      return deflt;
+    }
+    const sortIndex = a => {
+      let idx = this.recentlyUsed.findIndex( e => e === a.regexKey );
+      return idx >= 0 ? idx : this.recentlyUsed.length + a.idx;
+    };
+    // we could update recentlyUsed and remove regexKeys that are not found in the setting
+    // TODO when we persistently save recentlyUsed
+    qpItems.sort( (a, b) => sortIndex(a) - sortIndex(b) );
+    return vscode.window.showQuickPick(qpItems)
+      .then( item => {
+        if (!item) { return undefined; }
+        let regexKey = item.regexKey;
+        this.recentlyUsed = [regexKey].concat(this.recentlyUsed.filter( e => e !== regexKey ));
+        return regexKey;
+      });
+  }
+}
+
+class ConfigRegexSelectBy extends ConfigRegex {
+  constructor() {
+    super('selectby');
+  }
+  isValidRegex(regex) {
+    return getProperty(regex, 'backward') || getProperty(regex, 'forward') || getProperty(regex, 'forwardNext') || getProperty(regex, 'surround');
+  }
+}
+
+class ConfigRegexMoveBy extends ConfigRegex {
+  constructor() {
+    super('moveby');
+  }
+  isValidRegex(regex) {
+    // if (isObject(regex)) {
+    //   return getProperty(regex, 'regex') || getProperty(regex, 'ask');
+    // }
+    return true;
+  }
+  defaultOnEmptyList() { return {}; }
+}
+
 function activate(context) {
-
-  var getProperty = (obj, prop, deflt) => { return obj.hasOwnProperty(prop) ? obj[prop] : deflt; };
-  var getPropertyOrGlobal = (obj, prop, globalProps, deflt) => { return getProperty(obj, prop, getProperty(globalProps, prop, deflt)); };
-  var isString = obj => typeof obj === 'string';
-  const isArray = obj => Array.isArray(obj);
-  const isObject = obj => (typeof obj === 'object') && !isArray(obj);
-
-  var isPosInteger = value => /^\d+$/.test(value);
-  var getConfigRegExes = () => vscode.workspace.getConfiguration('selectby', null).get('regexes');
-  var getConfigRegEx = regexKey => {
-    let regexes = getConfigRegExes();
+  var getConfigRegEx = (regexKey, regexes) => {
     if (!regexes.hasOwnProperty(regexKey)) {
       vscode.window.showErrorMessage(regexKey+" not found.");
       return undefined;
     }
-    let search = regexes[regexKey];
-    if (getProperty(search, "debugNotify", false)) {
-      vscode.window.showInformationMessage(JSON.stringify(search));
+    let config = regexes[regexKey];
+    if (getProperty(config, "debugNotify", false)) {
+      vscode.window.showInformationMessage(JSON.stringify(config));
     }
-    return search;
+    return config;
+  };
+  var getConfigSelectByRegEx = regexKey => {
+    return getConfigRegEx(regexKey, getConfigSelectByRegExes());
+  };
+  var getConfigMoveByRegEx = regexKey => {
+    return getConfigRegEx(regexKey, getConfigMoveByRegExes());
   };
   function range(size, startAt = 0) { return [...Array(size).keys()].map(i => i + startAt); }  // https://stackoverflow.com/a/10050831/9938317
   function expressionFunc(expr, args) {
@@ -37,11 +111,11 @@ function activate(context) {
       throw new Error(`${message} in ${expr}`);
     }
   }
-  var recentlyUsedSelectBy = [];
-  var recentlyUsedMoveBy = [];
+  var configRegexSelectBy = new ConfigRegexSelectBy();
+  var configRegexMoveBy = new ConfigRegexMoveBy();
   var processRegExKey = (regexKey, editor) => {
     if (!isString(regexKey)) { regexKey = 'regex' + regexKey.toString(10); }
-    let search = getConfigRegEx(regexKey);
+    let search = getConfigSelectByRegEx(regexKey);
     processRegExSearch(search, editor);
   };
   var processRegExSearch = (search, editor) => {
@@ -215,50 +289,14 @@ function activate(context) {
       processRegExSearch(args, editor);
       return;
     }
-    let regexKey = await new Promise(resolve => {
-      if (args !== undefined) {
-        resolve(args[0]);
-        return;
-      }
-      let regexes = getConfigRegExes();
-      let qpItems = [];
-      for (const key in regexes) {
-        if (!regexes.hasOwnProperty(key)) { continue; }
-        const regex = regexes[key];
-        if (!(getProperty(regex, 'backward') || getProperty(regex, 'forward') || getProperty(regex, 'forwardNext') || getProperty(regex, 'surround'))) { continue; }
-        let label = getProperty(regex, 'label', key);
-        if (getProperty(regex, 'copyToClipboard')) { label += ' $(clippy)'; }
-        if (getProperty(regex, 'debugNotify')) { label += ' $(debug)'; }
-        let description = getProperty(regex, 'description');
-        let detail = getProperty(regex, 'detail');
-        qpItems.push( { idx: qpItems.length, regexKey: key, label, description, detail } );
-      }
-      if (qpItems.length === 0) {
-        vscode.window.showInformationMessage("No usable regex found");
-        resolve(undefined);
-        return;
-      }
-      const sortIndex = a => {
-        let idx = recentlyUsedSelectBy.findIndex( e => e === a.regexKey );
-        return idx >= 0 ? idx : recentlyUsedSelectBy.length + a.idx;
-      };
-      // we could update recentlyUsedSelectBy and remove regexKeys that are not found in the setting
-      // TODO when we persistently save recentlyUsedSelectBy
-      qpItems.sort( (a, b) => sortIndex(a) - sortIndex(b) );
-      resolve(vscode.window.showQuickPick(qpItems)
-        .then( item => {
-          if (item) {
-            let regexKey = item.regexKey;
-            recentlyUsedSelectBy = [regexKey].concat(recentlyUsedSelectBy.filter( e => e !== regexKey ));
-          }
-          return item;
-      }));
-    }).then( item => {
-      if (isString(item)) return item;
-      return item ? item.regexKey : undefined;
-    });
+    let regexKey = await configRegexSelectBy.getRegexKey();
     if (regexKey === undefined) { return; }
-    processRegExKey(regexKey, editor);
+    if (isArray(regexKey) && regexKey.length > 0) {
+      regexKey = regexKey[0];
+    }
+    if (isString(regexKey)) {
+      processRegExKey(regexKey, editor);
+    }
   };
   let lastLineNrExInput = 'c+6k';
   var selectBy_lineNrEx_Ask = async (args) => {
@@ -272,13 +310,14 @@ function activate(context) {
       return item;
     });
   };
+  var recentlyUsedMoveByAskRegex = [];
   var moveBy_regex_Ask = async () => {
     return vscode.window.showInputBox({"ignoreFocusOut":true, "prompt": "RegEx to move to"})
     // return vscode.window.showQuickPick(recentlyUsedMoveBy)
     .then( item => {
       if (isString(item) && item.length === 0) { item = undefined; } // accepted an empty inputbox
       if (item) {
-        recentlyUsedMoveBy = [item].concat(recentlyUsedMoveBy.filter( e => e !== item ));
+        recentlyUsedMoveByAskRegex = [item].concat(recentlyUsedMoveByAskRegex.filter( e => e !== item ));
       }
       return item;
     });
@@ -421,14 +460,20 @@ function activate(context) {
     updateEditorSelections(editor, selections);
   };
   var movebyRegEx = async (editor, args) => {
-    if (args === undefined) { args = {}; } // TODO use QuickSelect to construct an args array
+    if (args === undefined) {
+      args = await configRegexMoveBy.getRegexKey();
+    }
+    if (isString(args)) {
+      args = getConfigMoveByRegEx(args);
+    }
+    if (args === undefined) { return; }
     let regex, flagsObj, properties;
     let checkCurrent = false;
     let repeat = '1';
     if (Array.isArray(args)) {
       let regexKey = args[0];
       let regexFBM = args[1];
-      let search = getConfigRegEx(regexKey);
+      let search = getConfigSelectByRegEx(regexKey);
       if (search === undefined) { return; }
       regex = getProperty(search, regexFBM);
       flagsObj = search;

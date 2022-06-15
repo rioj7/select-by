@@ -4,7 +4,7 @@
   "description": "Select text range based on certain criteria (regex,...) and move cursor by regex",
   "publisher": "rioj7",
   "license": "MIT",
-  "version": "1.15.0",
+  "version": "1.16.0",
   "engines": {"vscode": "^1.55.0"},
   "categories": ["Other"],
   "keywords": ["select","text","range","move","cursor","multi"],
@@ -249,6 +249,63 @@
           "description": "How to reveal the cursor if it moves outside visible range.",
           "default": "Default",
           "enum": ["AtTop", "Default", "InCenter", "InCenterIfOutsideViewport"]
+        },
+        "moveby.regexes": {
+          "type": "object",
+          "scope": "resource",
+          "description": "Object with parameters for the different regexes",
+          "default": {},
+          "patternProperties": {
+            "^.+$": {
+              "type": ["object", "array"],
+              "properties": {
+                "flags": {
+                  "type": "string",
+                  "description": "(Optional) string with the regex flags \"i\" and/or \"m\" (default: \"\")"
+                },
+                "regex": {
+                  "type": "string",
+                  "description": "(Optional) the regex to use, if not given ask for a regex"
+                },
+                "ask": {
+                  "type": "boolean",
+                  "description": "(Optional) ask for a regex if \"regex\" property not given"
+                },
+                "properties": {
+                  "type": "array",
+                  "description": "(Optional) strings that determine how to use the regex: next/prev, start/end, wrap/nowrap (default: [\"next\", \"end\", \"nowrap\"])",
+                  "items": {
+                    "enum": ["next", "prev", "start", "end", "wrap", "nowrap"]
+                  },
+                  "uniqueItems": true
+                },
+                "repeat": {
+                  "type": ["integer", "string"],
+                  "description": "(Optional) how many times to perform the search, or \"ask\" (default: 1)"
+                },
+                "checkCurrent": {
+                  "type": "boolean",
+                  "description": "(Optional) check if current cursor position is a possible match (default: false)"
+                },
+                "debugNotify": {
+                  "type": "boolean",
+                  "description": "(Optional) show a notify message of the used search properties (User and Workspace properties are merged) (default: false)"
+                },
+                "label": {
+                  "type": "string",
+                  "description": "(Optional) Label to use in the QuickPick list for the command selectby.regex"
+                },
+                "description": {
+                  "type": "string",
+                  "description": "(Optional) Description to use in the QuickPick list on the same line for the command selectby.regex"
+                },
+                "detail": {
+                  "type": "string",
+                  "description": "(Optional) Detail to use in the QuickPick list on a separate line for the command selectby.regex"
+                }
+              }
+            }
+          }
         }
       }
     }
