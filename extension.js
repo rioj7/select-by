@@ -289,7 +289,7 @@ function activate(context) {
       processRegExSearch(args, editor);
       return;
     }
-    let regexKey = await configRegexSelectBy.getRegexKey();
+    let regexKey = await configRegexSelectBy.getRegexKey(args);
     if (regexKey === undefined) { return; }
     if (isArray(regexKey) && regexKey.length > 0) {
       regexKey = regexKey[0];

@@ -3,6 +3,10 @@
 ## [Unreleased]
 ### Added
 
+## [1.16.1] 2022-07-26
+### Fixed
+- `selectby.regex` : fix: shows QuickPick list if args in key binding is an Array with regex name
+
 ## [1.16.0] 2022-06-15
 ### Added
 - `moveby.regex` : show QuickPick list of predefined searches if called from Command Palette or no args in key binding
