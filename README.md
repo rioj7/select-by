@@ -9,6 +9,7 @@ The extension has commands for 8 things:
 * [Select By Anchor and Active by Regex](#select-by-anchor-and-active-by-regex): Modify the anchor and active position of the selection(s)
 * [Select By Mark](#select-by-mark): Mark position of cursor(s), create selection(s) on next mark, restore cursor locations
 * [Select By Multi Cursor with keyboard](#select-by-multi-cursor-with-keyboard): Create and modify Multi Cursors with the keyboard
+* [Select By Move Selections](#select-by-move-selections): Move selections start/end/anchor/active a given offset
 * [Move By](#move-by): move the cursor based on Regular Expressions or a Calculation
 
 # Select By
@@ -564,6 +565,60 @@ With the command `extra-context.toggleVariable` you can toggle the variable and 
     "when": "editorTextFocus && extraContext:multiCursorByKeyboard",
     "command": "selectby.moveLastSelection",
     "args": {"offset": -1}
+  }
+```
+
+# Select By Move Selections
+
+Sometimes the selection commands select a few characters too much or too little.
+
+With the command `selectby.moveSelections` you can adjust the selection ends a few characters.
+
+The _number_ values of the properties can be positive, negative or zero.
+
+The `args` property of the command has the following properties:
+
+* `offset` : _number_, move both **start** and **end** _number_ characters 
+* `start` : _number_, move **start** _number_ characters 
+* `end` : _number_, move **end** _number_ characters 
+* `anchor` : _number_, move **anchor** _number_ characters 
+* `active` : _number_, move **active** _number_ characters 
+
+`active` side of the selection is the side where the cursor is.
+
+Which properties are used is determined by:
+
+1. `start` or `end` defined. Use `start` and `end`. The property not defined has a value of `0`
+1. `anchor` or `active` defined. Use `anchor` and `active`. The property not defined has a value of `0`
+1. use `offset`
+
+Example:
+
+Reduce the selections 1 character at the start and end.
+
+```json
+  {
+    "key": "ctrl+i r",
+    "when": "editorTextFocus",
+    "command": "selectby.moveSelections",
+    "args": {"start": 1, "end": -1}
+  }
+```
+
+It can also be combined to modify a selection command using the extension [multi-command](https://marketplace.visualstudio.com/items?itemName=ryuta46.multi-command).
+
+If you don't want the brackets to be selected when using the **Select to Bracket** command:
+
+```json
+  {
+    "key": "ctrl+i ctrl+b",  // or any other combo
+    "command": "extension.multiCommand.execute",
+    "args": { 
+        "sequence": [
+            "editor.action.selectToBracket",
+            { "command": "selectby.moveSelections", "args": {"start": 1, "end": -1} }
+        ]
+    }
   }
 ```
 

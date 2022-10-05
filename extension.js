@@ -662,6 +662,12 @@ function activate(context) {
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.addNewSelectionAtOffset', (editor, edit, args) => {
     vscode.window.showInformationMessage('selectby.addNewSelectionAtOffset renamed to selectby.addNewSelection');
   }) );
+  const updateSelection = (editor, selection, argsAnchor, argsActive) => {
+    let newAnchor = positionAtOffset(editor, selection.anchor, argsAnchor);
+    let newActive = positionAtOffset(editor, selection.active, argsActive);
+    if (!newAnchor || !newActive) { return; }
+    return new vscode.Selection(newAnchor, newActive);
+  };
   const updateLastSelection = (editor, argsAnchor, argsActive) => {
     let selections = editor.selections.slice();
     let lastSelectionIdx = selections.length-1;
@@ -679,6 +685,33 @@ function activate(context) {
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.moveLastSelectionActive', (editor, edit, args) => {
     if (args === undefined) { args = {}; }
     updateLastSelection(editor, {offset:0}, args);
+  }) );
+  context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.moveSelections', (editor, edit, args) => {
+    if (args === undefined) { args = {}; }
+    let offset0 = {offset:0};
+    let offset = getProperty(args, 'offset');
+    offset = (offset === undefined) ? offset0 : {offset};
+    let start = getProperty(args, 'start');
+    let end = getProperty(args, 'end');
+    let anchor = getProperty(args, 'anchor');
+    let active = getProperty(args, 'active');
+    if (start || end) {
+      if (start === undefined) { start = offset0; }
+      if (end === undefined) { end = offset0; }
+    } else if (anchor || active) {
+      if (anchor === undefined) { anchor = offset0; }
+      if (active === undefined) { active = offset0; }
+    } else {
+      anchor = offset;
+      active = offset;
+    }
+    let selections = editor.selections.map(s => {
+      if (start) {
+        return updateSelection(editor, s, s.isReversed ? end : start, s.isReversed ? start : end);
+      }
+      return updateSelection(editor, s, anchor, active);
+    });
+    updateEditorSelections(editor, selections);
   }) );
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('moveby.regex', (editor, edit, args) => { movebyRegEx(editor, args);}) );
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('moveby.calculation', (editor, edit, args) => { movebyCalculation(editor, args);}) );

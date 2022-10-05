@@ -1,7 +1,8 @@
 # Change Log
 
-## [Unreleased]
+## [1.17.0] 2022-09-05
 ### Added
+- `selectby.moveSelections` : move selections start/end/anchor/active a given offset
 
 ## [1.16.1] 2022-07-26
 ### Fixed
