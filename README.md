@@ -640,7 +640,7 @@ The argument of the command can be:
 * `undefined` : when called from Command Palette or key binding without argument  
   You are presented with a QuickPick list of arguments defined in the setting `moveby.regexes`.  
   If `moveby.regexes` is empty it behaves as if the argument of the key binding or command was:
-  ```
+  ```json
   "args": {
     "ask": true,
     "properties": ["next", "end", "nowrap"]
@@ -661,7 +661,7 @@ The setting `moveby.regexes` is an object with key-value pairs. The value can be
 
 An example for the setting `moveby.regexes`:
 
-```
+```json
   "moveby.regexes": {
     "Go to Last Dot": {
       "regex": "\\.(?!.*\\.)",
@@ -711,7 +711,7 @@ If the `"args"` property of the key binding is an Object it can have the followi
 
 If you want to move the cursor(s) to the first character inside the next Python string you can use:
 
-```
+```json
   {
     "key": "ctrl+f6",  // or any other key combo
     "when": "editorTextFocus",
@@ -725,7 +725,7 @@ If you want to move the cursor(s) to the first character inside the next Python 
 
 If you want to move the cursor(s) to the start of the next regex asked from the user you can use:
 
-```
+```json
   {
     "key": "ctrl+shift+f6",  // or any other key combo
     "when": "editorTextFocus",
@@ -739,7 +739,7 @@ If you want to move the cursor(s) to the start of the next regex asked from the 
 
 If you want to move _n_, ask user how often, `<td>` tags forward use:
 
-```
+```json
   {
     "key": "alt+f6",  // or any other key combo
     "when": "editorTextFocus",
@@ -754,7 +754,7 @@ If you want to move _n_, ask user how often, `<td>` tags forward use:
 
 if you want to insert a snippet at the end of an HTML open tag
 
-```
+```json
   {
     "key": "alt+f7", // or any other key combo
     "when": "editorTextFocus",
@@ -799,7 +799,7 @@ The expressions can use a number of variables:
 
 If you want to move the cursor to the midpoint of the line the cursor is on you can use
 
-```
+```json
   {
     "key": "ctrl+i ctrl+m",  // or any other key binding
     "when": "editorTextFocus",
@@ -812,7 +812,7 @@ If you want to move the cursor to the midpoint of the line the cursor is on you 
 
 If something reports a problem at a character offset (relative to start of file) you can use:
 
-```
+```json
   {
     "key": "ctrl+i ctrl+f",  // or any other key binding
     "when": "editorTextFocus",
