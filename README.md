@@ -796,6 +796,7 @@ The expressions can use a number of variables:
 * `currentLine.length` : the length of `currentLine` variable
 * `offset.line` : Ask the user for an offset (relative to start of file) and calculate line and character position
 * `offset.character`
+* `relative` : Ask the user for a number (positive or negative) to be used to calculate a relative line or character position
 
 If you want to move the cursor to the midpoint of the line the cursor is on you can use
 
@@ -820,6 +821,20 @@ If something reports a problem at a character offset (relative to start of file)
     "args": {
       "lineNrEx": "offset.line",
       "charNrEx": "offset.character"
+    }
+  }
+```
+
+If you want a **Go To Line** but enter a relative line number use:
+
+```json
+  {
+    "key": "ctrl+alt+g",  // or any other key binding
+    "when": "editorTextFocus",
+    "command": "moveby.calculation",
+    "args": {
+      "lineNrEx": "selection.start.line+relative",
+      "charNrEx": "selection.start.character"
     }
   }
 ```

@@ -9,6 +9,7 @@ const isString = obj => typeof obj === 'string';
 const isArray = obj => Array.isArray(obj);
 const isObject = obj => (typeof obj === 'object') && !isArray(obj);
 const isPosInteger = value => /^\d+$/.test(value);
+const isInteger = value => /^-?\d+$/.test(value);
 
 class ConfigRegex {
   constructor(config) {
@@ -322,14 +323,19 @@ function activate(context) {
       return item;
     });
   };
-  var positiveInteger_Ask = async (prompt) => {
-    return vscode.window.showInputBox({ignoreFocusOut:true, prompt,
-          value: "1", validateInput: value => isPosInteger(value) ? undefined : 'Only positive integers' })
+  var integer_Ask = async (prompt, positive = false) => {
+    let validateInput = value => isInteger(value) ? undefined : 'Only integers';
+    if (positive) {
+      validateInput = value => isPosInteger(value) ? undefined : 'Only positive integers';
+    }
+    return vscode.window.showInputBox({ignoreFocusOut:true, prompt, value: "1", validateInput})
     .then( item => {
       if (isString(item) && item.length === 0) { item = undefined; } // accepted an empty inputbox
       return item;
     });
   };
+  var positiveInteger_Ask = async (prompt) => { return integer_Ask(prompt, true); };
+
   /** @returns {vscode.Position} @param {vscode.TextEditor} editor @param {vscode.Position} currentPosition @param {RegExp} regex @param {boolean} findPrev @param {boolean} findStart @param {boolean} wrapCursor @param {boolean} checkCurrent */
   var findRegexPosition = (editor, currentPosition, regex, findPrev, findStart, wrapCursor=false, checkCurrent=false) => {
     var docText = editor.document.getText();
@@ -501,11 +507,11 @@ function activate(context) {
     let wrapCursor = properties.indexOf('wrap') >= 0;
     movebyPositions(editor, s => findRegexPosition(editor, findPrev ? s.start : s.end, regex, findPrev, findStart, wrapCursor, checkCurrent), Number(repeat));
   };
-  function calculatePosition(editor, selection, lineNrExFunc, charNrExFunc, offset) {
-    let arg = {selection: selection, currentLine: editor.document.lineAt(selection.start.line).text, selections: editor.selections, offset: offset};
+  function calculatePosition(editor, selection, lineNrExFunc, charNrExFunc, offset, relative) {
+    let arg = {selection: selection, currentLine: editor.document.lineAt(selection.start.line).text, selections: editor.selections, offset: offset, relative: relative};
     return new vscode.Position(Math.floor(lineNrExFunc(arg)), Math.floor(charNrExFunc(arg)));
   }
-  const transformCalculationEx = str => str.replace(/selections?|currentLine|offset/g, 'arg.$&');
+  const transformCalculationEx = str => str.replace(/selections?|currentLine|offset|relative/g, 'arg.$&');
   var movebyCalculation = async (editor, args) => {
     if (args === undefined) { args = {}; }
     let lineNrEx = getProperty(args, 'lineNrEx', 'selection.start.line');
@@ -517,9 +523,15 @@ function activate(context) {
       if (offsetInput === undefined) { return; }
       offset = editor.document.positionAt(Number(offsetInput));
     }
+    let relative = 0;
+    if (lineNrEx.indexOf('relative') !== -1) {
+      let relativeInput = await integer_Ask('Go to relative line/character');
+      if (relativeInput === undefined) { return; }
+      relative = Number(relativeInput);
+    }
     let lineNrExFunc = expressionFunc(transformCalculationEx(lineNrEx), 'arg');
     let charNrExFunc = expressionFunc(transformCalculationEx(charNrEx), 'arg');
-    movebyPositions(editor, s => calculatePosition(editor, s, lineNrExFunc, charNrExFunc, offset));
+    movebyPositions(editor, s => calculatePosition(editor, s, lineNrExFunc, charNrExFunc, offset, relative));
   };
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.swapActive', editor => {
     editor.selections = editor.selections.map( s => new vscode.Selection(s.active, s.anchor));

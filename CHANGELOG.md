@@ -1,5 +1,9 @@
 # Change Log
 
+## [1.18.0] 2022-11-03
+### Added
+- `moveby.calculation` : ask for numeric value for variable `relative`
+
 ## [1.17.0] 2022-09-05
 ### Added
 - `selectby.moveSelections` : move selections start/end/anchor/active a given offset
