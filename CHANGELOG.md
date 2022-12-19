@@ -1,5 +1,9 @@
 # Change Log
 
+## [1.19.0] 2022-12-19
+### Added
+- `selectby.addSelectionToNextFindMatchMultiCursor` : Multi Cursor variant of `editor.action.addSelectionToNextFindMatch` (`Ctrl+D`)
+
 ## [1.18.0] 2022-11-03
 ### Added
 - `moveby.calculation` : ask for numeric value for variable `relative`

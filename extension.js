@@ -10,6 +10,8 @@ const isArray = obj => Array.isArray(obj);
 const isObject = obj => (typeof obj === 'object') && !isArray(obj);
 const isPosInteger = value => /^\d+$/.test(value);
 const isInteger = value => /^-?\d+$/.test(value);
+/** @param {Array} a @param {Array} b */
+const zip = (a, b) => a.map((k, i) => [k, b[i]]);
 
 class ConfigRegex {
   constructor(config) {
@@ -722,6 +724,23 @@ function activate(context) {
         return updateSelection(editor, s, s.isReversed ? end : start, s.isReversed ? start : end);
       }
       return updateSelection(editor, s, anchor, active);
+    });
+    updateEditorSelections(editor, selections);
+  }) );
+  context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.addSelectionToNextFindMatchMultiCursor', (editor, edit, args) => {
+    let document = editor.document;
+    let text = document.getText();
+    let selections = [...editor.selections];
+    selections.sort((a, b) => { return a.start.compareTo(b.start); });
+    selections = selections.flatMap( (selection, idx, arr) => {
+      if (selection.isEmpty) { return selection; }
+      let stopPos = (idx < arr.length-1) ? arr[idx+1].start : document.positionAt(text.length);
+      let searchText = document.getText(selection);
+      let nextOccur = text.indexOf(searchText, document.offsetAt(selection.end));
+      if (nextOccur === -1) { return selection; }
+      let nextOccurPos = document.positionAt(nextOccur);
+      if (nextOccurPos.isAfterOrEqual(stopPos)) { return selection; }
+      return [selection, new vscode.Selection(nextOccurPos, document.positionAt(nextOccur+searchText.length))]
     });
     updateEditorSelections(editor, selections);
   }) );

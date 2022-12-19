@@ -10,6 +10,7 @@ The extension has commands for 8 things:
 * [Select By Mark](#select-by-mark): Mark position of cursor(s), create selection(s) on next mark, restore cursor locations
 * [Select By Multi Cursor with keyboard](#select-by-multi-cursor-with-keyboard): Create and modify Multi Cursors with the keyboard
 * [Select By Move Selections](#select-by-move-selections): Move selections start/end/anchor/active a given offset
+* [Select By Add Selection To Next Find Match Multi Cursor](#select-by-add-selection-to-next-find-match-multi-cursor): Multi Cursor variant of **Add Selection To Next Find Match** (`Ctrl+D`)
 * [Move By](#move-by): move the cursor based on Regular Expressions or a Calculation
 
 # Select By
@@ -621,6 +622,14 @@ If you don't want the brackets to be selected when using the **Select to Bracket
     }
   }
 ```
+
+# Select By Add Selection To Next Find Match Multi Cursor
+
+Multi Cursor variant of **Add Selection To Next Find Match** (`Ctrl+D`).
+
+The commandID is: `selectby.addSelectionToNextFindMatchMultiCursor`
+
+Consider each selection separate. Find the **next** occurrence of the same text. If this happens **before** the next selection add this **next** occurrence to the selections.
 
 # Move By
 

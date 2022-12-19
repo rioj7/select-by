@@ -4,10 +4,10 @@
   "description": "Select text range based on certain criteria (regex,...) and move cursor by regex",
   "publisher": "rioj7",
   "license": "MIT",
-  "version": "1.18.0",
+  "version": "1.19.0",
   "engines": {"vscode": "^1.55.0"},
   "categories": ["Other"],
-  "keywords": ["select","text","range","move","cursor","multi"],
+  "keywords": ["select","text","range","move","cursor","multi","find"],
   "icon": "images/icon.png",
   "galleryBanner": {"color": "#000080", "theme": "dark"},
   "activationEvents": [
@@ -30,6 +30,7 @@
     "onCommand:selectby.moveLastSelection",
     "onCommand:selectby.moveLastSelectionActive",
     "onCommand:selectby.moveSelections",
+    "onCommand:selectby.addSelectionToNextFindMatchMultiCursor",
     "onCommand:moveby.regex",
     "onCommand:moveby.calculation",
     "onCommand:selectby.addNewSelectionAtOffset"
@@ -124,6 +125,11 @@
       {
         "command": "selectby.moveLastSelection",
         "title": "Move the last selection number of characters left/right (default: 1)",
+        "category": "SelectBy"
+      },
+      {
+        "command": "selectby.addSelectionToNextFindMatchMultiCursor",
+        "title": "Add Selection To Next Find Match - Multi Cursor",
         "category": "SelectBy"
       },
       {
