@@ -1,5 +1,9 @@
 # Change Log
 
+## [1.20.0] 2022-12-28
+### Added
+- `selectby.regex` : Multi Cursor support
+
 ## [1.19.0] 2022-12-19
 ### Added
 - `selectby.addSelectionToNextFindMatchMultiCursor` : Multi Cursor variant of `editor.action.addSelectionToNextFindMatch` (`Ctrl+D`)

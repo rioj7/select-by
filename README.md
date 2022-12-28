@@ -1,6 +1,6 @@
 The extension has commands for 8 things:
 
-* [Select By](#select-by): modify the selection based on Regular Expressions
+* [Select By](#select-by): modify the selections based on Regular Expressions
 * [Select By Paste Clipboard](#select-by-paste-clipboard): Replace selection with clipboard content
 * [Select By Line Number](#select-by-line-number): Place cursor based on line number, uses boolean expression
 * [Select By Remove Cursor](#select-by-remove-cursor): Remove one of the multi cursors
@@ -14,7 +14,12 @@ The extension has commands for 8 things:
 * [Move By](#move-by): move the cursor based on Regular Expressions or a Calculation
 
 # Select By
+
+The command is **SelectBy: Select text range based on regex** (`selectby.regex`).
+
 Select part of the file content surrounding the selection based on Regular Expressions. The current selection is extended or shrunk by searching forward and or backward or forward twice. If there is no current selection the cursor position is used.
+
+`selectby.regex` supports Multi Cursor. Each selection is processed separately.
 
 You can specify a "Search Back" expression, a "Search Forward" expression and  a "Search Forward Next" expression. If they are not specified that search direction is not performed.
 
@@ -906,7 +911,3 @@ Define 2 key bindings (you can change the assigned keys)
     "args": ["goToEmptyLine", "moveby", "next", "start"]
   }
 ```
-
-# TODO
-
-* Support for Multi Cursors for SelectBy

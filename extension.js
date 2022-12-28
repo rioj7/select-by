@@ -124,8 +124,13 @@ function activate(context) {
   var processRegExSearch = (search, editor) => {
     if (!search) { return; }
     var docText = editor.document.getText();
+    updateEditorSelections(editor,
+      editor.selections.map( selection => processRegExSearchSelection(search, editor, selection, docText) ),
+      getProperty(search, "showSelection", true));  // found by johnnytemp in #10
+  };
+  var processRegExSearchSelection = (search, editor, selection, docText) => {
     // position of cursor is "start" of selection
-    var offsetCursor = editor.document.offsetAt(editor.selection.start);
+    var offsetCursor = editor.document.offsetAt(selection.start);
     var selectStart = offsetCursor;
     var flags = getProperty(search, "flags", "") + "g";
     var regex;
@@ -161,7 +166,7 @@ function activate(context) {
         }
       }
     }
-    let currentSelectionEnd = editor.document.offsetAt(editor.selection.end);
+    let currentSelectionEnd = editor.document.offsetAt(selection.end);
     let selectEnd = currentSelectionEnd;
     regex = getProperty(search, "forward");
     let regexForwardNext = getProperty(search, "forwardNext");
@@ -282,9 +287,9 @@ function activate(context) {
       vscode.env.clipboard.writeText(docText.substring(selectStart, selectEnd)).then((v)=>v, (v)=>null);
     }
     if (getProperty(search, "showSelection", true)) {
-      editor.selection = new vscode.Selection(editor.document.positionAt(selectStart), editor.document.positionAt(selectEnd));
-      editor.revealRange(editor.selection);  // found by johnnytemp in #10
+      selection = new vscode.Selection(editor.document.positionAt(selectStart), editor.document.positionAt(selectEnd));
     }
+    return selection;
   };
 
   var selectbyRegEx = async (editor, args) => {
@@ -445,11 +450,13 @@ function activate(context) {
         .filter( s => s !== undefined);
     updateEditorSelections(editor, selections);
   };
-  var updateEditorSelections = (editor, selections) => {
+  var updateEditorSelections = (editor, selections, reveal=true) => {
     if (selections.length === 0) return;
     editor.selections = selections;
-    var rng = new vscode.Range(editor.selection.start, editor.selection.start);
-    editor.revealRange(rng, vscode.TextEditorRevealType[vscode.workspace.getConfiguration('moveby', null).get('revealType')]);
+    if (reveal) {
+      var rng = new vscode.Range(editor.selection.start, editor.selection.start);
+      editor.revealRange(rng, vscode.TextEditorRevealType[vscode.workspace.getConfiguration('moveby', null).get('revealType')]);
+    }
   };
   /** @param {readonly vscode.Selection[]} selections */
   var sortSelections = selections => {
