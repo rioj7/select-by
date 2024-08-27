@@ -1,5 +1,9 @@
 # Change Log
 
+## [1.20.1] 2024-08-27
+### Modified
+- `selectby.pasteClipboard` : select pasted text if initial selection is empty (editBuilder.replace() has changed behavior)
+
 ## [1.20.0] 2022-12-28
 ### Added
 - `selectby.regex` : Multi Cursor support

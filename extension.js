@@ -608,7 +608,11 @@ function activate(context) {
     }
     let content = await vscode.env.clipboard.readText();
     if (isString(content)) {
-      editor.edit( editBuilder => editBuilder.replace(editor.selection, content) ); // need new editBuilder after await
+      let posStart = editor.selection.start;
+      await editor.edit( editBuilder => editBuilder.replace(editor.selection, content) ); // need new editBuilder after await
+      if (editor.selection.isEmpty) {
+        editor.selections = [new vscode.Selection(posStart, editor.selection.end)];
+      }
     }
   }) );
   let transform_line_modulo = (match, number) => `((n-c)%${number}==0 && n>=c)`;
