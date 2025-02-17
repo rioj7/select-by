@@ -711,15 +711,19 @@ function activate(context) {
     if (args === undefined) { args = {}; }
     updateLastSelection(editor, {offset:0}, args);
   }) );
+  const getPropertyAsOffset = (args, propName) => {
+    let offset = getProperty(args, propName);
+    return (offset !== undefined) ? { offset } : undefined;
+  };
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('selectby.moveSelections', (editor, edit, args) => {
     if (args === undefined) { args = {}; }
     let offset0 = {offset:0};
     let offset = getProperty(args, 'offset');
     offset = (offset === undefined) ? offset0 : {offset};
-    let start = getProperty(args, 'start');
-    let end = getProperty(args, 'end');
-    let anchor = getProperty(args, 'anchor');
-    let active = getProperty(args, 'active');
+    let start = getPropertyAsOffset(args, 'start');
+    let end = getPropertyAsOffset(args, 'end');
+    let anchor = getPropertyAsOffset(args, 'anchor');
+    let active = getPropertyAsOffset(args, 'active');
     if (start || end) {
       if (start === undefined) { start = offset0; }
       if (end === undefined) { end = offset0; }

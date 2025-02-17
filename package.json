@@ -4,7 +4,7 @@
   "description": "Select text range based on certain criteria (regex,...) and move cursor by regex",
   "publisher": "rioj7",
   "license": "MIT",
-  "version": "1.20.1",
+  "version": "1.20.2",
   "engines": {"vscode": "^1.55.0"},
   "categories": ["Other"],
   "keywords": ["select","text","range","move","cursor","multi","find"],
